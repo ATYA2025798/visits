@@ -1,0 +1,8 @@
+lib/generated
+.next
+coverage
+test-results
+playwright-report
+package-lock.json
+*.md
+legacy-review/

@@ -1,0 +1,30 @@
+# نسخة العرض على Render (الخطة المجانية): docs/demo-script.md
+# Render ← New ← Blueprint ← اختار هالمستودع. بيطلب منك DEMO_PASSWORD (كلمة سر حسابات التجربة).
+services:
+  - type: web
+    name: ambassadors-visits-demo
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile.demo
+    healthCheckPath: /login
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: visits-demo-db
+          property: connectionString
+      - key: DEMO_PASSWORD
+        sync: false
+      - key: MIKROTIK_KEY
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: TRUST_PROXY
+        value: "true"
+
+databases:
+  - name: visits-demo-db
+    plan: free
+    region: frankfurt
+    databaseName: visits
+    user: visits
