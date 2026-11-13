@@ -10,8 +10,8 @@ lib/generated/
 !.env.example
 *.tsbuildinfo
 next-env.d.ts
-legacy-review/
+/legacy-review/
 data/
-.tmp/
-backups/
-import/
+/.tmp/
+/backups/
+/import/
