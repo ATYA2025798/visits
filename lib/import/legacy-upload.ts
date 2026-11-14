@@ -1,4 +1,4 @@
-/** رفع ملف الزيارات القديمة (multipart): الملف وخيار حذف البيانات الوهمية */
+/** رفع ملف الزيارات القديمة (multipart) */
 import type { NextRequest } from "next/server";
 import { ApiError } from "../errors";
 import { MAX_UPLOAD_BYTES } from "./upload";
@@ -20,7 +20,6 @@ export async function readLegacyUpload(req: NextRequest) {
   return {
     buffer: Buffer.from(await file.arrayBuffer()),
     fileName: file.name,
-    purgeDemo: form.get("purgeDemo") === "true",
   };
 }
 

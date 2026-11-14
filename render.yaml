@@ -1,12 +1,13 @@
-# نسخة العرض على Render (الخطة المجانية): docs/demo-script.md
-# Render ← New ← Blueprint ← اختار هالمستودع. بيطلب منك DEMO_PASSWORD (كلمة سر حسابات التجربة).
+# النسخة الرسمية على Render: docs/deploy.md
+# DEMO_PASSWORD (الاسم قديم من نسخة العرض) = كلمة السر الافتراضية لحسابات الفريق عند أول دخول.
+# ⚠ قاعدة البيانات المجانية على Render بتنتهي بعد 30 يوم من إنشائها: لازم ترقيتها لخطة مدفوعة قبلها.
 services:
   - type: web
     name: ambassadors-visits-demo
     runtime: docker
     plan: free
     region: frankfurt
-    dockerfilePath: ./Dockerfile.demo
+    dockerfilePath: ./Dockerfile.render
     healthCheckPath: /login
     envVars:
       - key: DATABASE_URL

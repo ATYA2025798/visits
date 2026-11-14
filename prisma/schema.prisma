@@ -294,6 +294,7 @@ model Attachment {
   mime        String
   size        Int
   path        String
+  data        Bytes? // الصورة نفسها لما ATTACHMENTS_IN_DB=true (بدل ملف على القرص)
   createdById String   @db.Uuid
   createdAt   DateTime @default(now())
 

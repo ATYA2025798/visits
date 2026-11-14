@@ -30,7 +30,7 @@ docker compose run --rm tools npm run create-user -- --username ali --name "عل
 docker compose run --rm backup   # نسخة احتياطية (وكل يوم بـ cron)
 ```
 
-نسخة العرض للإدارة ببيانات وهمية: **`docs/demo-script.md`** (أسرع طريقة لرابط تجربة: Render بـ `render.yaml` الجاهز). تطبيق الجوال: **`docs/install-android.md`**.
+النشر على Render (النسخة الرسمية): **`docs/deploy.md`**. تطبيق الجوال: **`docs/install-android.md`**.
 
 ## التطوير
 
@@ -45,7 +45,7 @@ npm run create-user -- --username boss --name "المسؤول" --role MANAGER   
 npm run dev                   # http://localhost:3000
 ```
 
-بيانات تجربة على قاعدة فاضية: `DEMO_PASSWORD=… npm run seed:demo`.
+حسابات الفريق على قاعدة جديدة: `TEAM_INITIAL_PASSWORD=… npm run ensure-team`.
 
 ## الفحوصات
 
@@ -87,5 +87,5 @@ npm run security:check -- http://127.0.0.1:3000   # فحص أمان حي على 
 2. **فحص OWASP ZAP وتواقيع المكتبات:** بيحتاجوا Docker ونت (`docs/security-report.md`).
 3. **تجربة الاسترجاع على سيرفر فاضي:** الأوامر بـ `docs/deploy.md` خطوة 5. انجرّبت هون على قاعدة فاضية ونجحت.
 4. **ملف الـ APK:** بيحتاج رابط HTTPS النهائي (`docs/install-android.md`).
-5. **استضافة نسخة العرض:** الخيارات بـ `docs/demo-script.md`، والقرار إلك.
+5. **الاستضافة:** Render (انظر `docs/deploy.md`)، مع ترقية قاعدة البيانات قبل انتهاء الثلاثين يوماً المجانية.
 6. **تجربة على الجوالات التلاتة:** أسبوع زيارات حقيقية (نقطة المراجعة 4).

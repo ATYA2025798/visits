@@ -21,7 +21,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "import:legacy": "tsx scripts/import-legacy.ts",
-    "seed:demo": "tsx scripts/seed-demo.ts",
+    "ensure-team": "tsx scripts/ensure-team.ts",
     "security:check": "node scripts/security-check.mjs"
   },
   "engines": {

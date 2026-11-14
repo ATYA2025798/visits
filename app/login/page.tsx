@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/session";
 import { BrandLogo } from "@/components/Brand";
 import { LoginForm } from "./LoginForm";
-import { DemoBanner } from "@/components/DemoBanner";
 
 export const metadata: Metadata = { title: "تسجيل الدخول" };
 
@@ -12,7 +11,6 @@ export default async function LoginPage() {
   return (
     <main className="auth">
       <div className="auth-card">
-        <DemoBanner />
         <div className="card">
           <div className="card-pad">
             <div style={{ textAlign: "center" }}>

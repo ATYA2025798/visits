@@ -51,6 +51,15 @@ export async function storeImages(
   images: DecodedImage[],
   createdById: string,
 ): Promise<() => Promise<void>> {
+  if (process.env.ATTACHMENTS_IN_DB === "true") {
+    for (const img of images) {
+      const id = randomUUID();
+      await tx.attachment.create({
+        data: { id, entity, entityId, mime: img.mime, size: img.buffer.length, path: `db:${id}`, data: new Uint8Array(img.buffer), createdById },
+      });
+    }
+    return async () => {};
+  }
   const written: string[] = [];
   const now = new Date();
   const dir = path.join(uploadRoot(), String(now.getUTCFullYear()), String(now.getUTCMonth() + 1).padStart(2, "0"));
@@ -72,6 +81,7 @@ export async function storeImages(
 export async function readAttachment(id: string, db: Db = defaultPrisma) {
   const a = await db.attachment.findUnique({ where: { id } });
   if (!a) return null;
+  if (a.data) return { ...a, buffer: Buffer.from(a.data) };
   // احتياط: ما بنقرأ إلا من جوّا مجلد الرفع
   const resolved = path.resolve(a.path);
   if (!resolved.startsWith(uploadRoot() + path.sep)) return null;

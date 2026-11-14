@@ -1,5 +1,4 @@
 import { requireUser } from "@/lib/session";
-import { DemoBanner } from "@/components/DemoBanner";
 import { can } from "@/lib/authz";
 import { Brand, BrandMark } from "@/components/Brand";
 import { Nav } from "@/components/Nav";
@@ -60,7 +59,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </details>
 
       <main className="main">
-        <DemoBanner />
         {children}
       </main>
     </div>

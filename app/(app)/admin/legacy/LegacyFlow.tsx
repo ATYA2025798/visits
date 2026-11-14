@@ -14,10 +14,9 @@ type Preview = {
   unknownValues: Array<{ kind: string; label: string; count: number }>;
 };
 
-async function send(url: string, file: File, purgeDemo: boolean) {
+async function send(url: string, file: File) {
   const fd = new FormData();
   fd.set("file", file);
-  fd.set("purgeDemo", String(purgeDemo));
   let res: Response;
   try {
     res = await fetch(url, { method: "POST", body: fd, credentials: "same-origin" });
@@ -29,11 +28,10 @@ async function send(url: string, file: File, purgeDemo: boolean) {
   return data;
 }
 
-export function LegacyFlow({ demo, legacyCount }: { demo: boolean; legacyCount: number }) {
+export function LegacyFlow({ legacyCount }: { legacyCount: number }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
-  const [purge, setPurge] = useState(demo);
   const [busy, setBusy] = useState<null | "preview" | "apply">(null);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -47,7 +45,7 @@ export function LegacyFlow({ demo, legacyCount }: { demo: boolean; legacyCount: 
     setDone(null);
     setBusy("preview");
     try {
-      setPreview(await send("/api/legacy/preview", f, false));
+      setPreview(await send("/api/legacy/preview", f));
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -58,15 +56,11 @@ export function LegacyFlow({ demo, legacyCount }: { demo: boolean; legacyCount: 
   async function doApply() {
     const f = file();
     if (!f || !preview) return;
-    if (purge && !window.confirm("سيتم حذف جميع البيانات الوهمية من النسخة التجريبية قبل النقل. هل تريد المتابعة؟")) return;
     setError(null);
     setBusy("apply");
     try {
-      const r = await send("/api/legacy/apply", f, purge);
-      setDone(
-        `تم النقل: ${r.created} زيارة جديدة، و${r.updated} زيارة حُدّثت، و${r.unchanged} دون تغيير.` +
-          (r.purged ? ` وحُذفت البيانات الوهمية (${r.purged.visits} زيارة و${r.purged.lines} خطاً).` : ""),
-      );
+      const r = await send("/api/legacy/apply", f);
+      setDone(`تم النقل: ${r.created} زيارة جديدة، و${r.updated} زيارة حُدّثت، و${r.unchanged} دون تغيير.`);
       setPreview(null);
       if (fileRef.current) fileRef.current.value = "";
       router.refresh();
@@ -160,12 +154,6 @@ export function LegacyFlow({ demo, legacyCount }: { demo: boolean; legacyCount: 
             </div>
           )}
           <div className="card-foot grid" style={{ gap: 12 }}>
-            {demo && (
-              <label className="check">
-                <input type="checkbox" checked={purge} onChange={(e) => setPurge(e.target.checked)} />
-                حذف البيانات الوهمية من النسخة التجريبية قبل النقل
-              </label>
-            )}
             <div className="actions">
               <button className="btn btn-primary" onClick={doApply} disabled={busy !== null}>
                 {busy === "apply" ? "جارٍ النقل…" : `نقل ${preview.summary.visits} زيارة إلى النظام`}

@@ -35,7 +35,7 @@ const OVERSIGHT: Item[] = [
   { href: "/admin/audit", label: "سجل العمليات", icon: "history" },
   { href: "/mikrotik/reveals", label: "سجل عرض كلمات السر", icon: "eye" },
   { href: "/admin/trash", label: "سلة المحذوفات", icon: "trash" },
-  { href: "/admin/legacy", label: "البيانات والنقل", icon: "upload" },
+  { href: "/admin/legacy", label: "نقل الزيارات القديمة", icon: "upload" },
 ];
 
 const ACCOUNT: Item[] = [{ href: "/account/password", label: "تغيير كلمة السر", icon: "lock" }];

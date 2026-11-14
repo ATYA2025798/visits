@@ -1,7 +1,7 @@
 /**
  * إنشاء حسابات الفريق إذا مش موجودة (lib/team.ts).
  *   TEAM_INITIAL_PASSWORD=... [SUPPORT_PASSWORD=...] npx tsx scripts/ensure-team.ts [--adopt-demo]
- * بدون TEAM_INITIAL_PASSWORD بنستعمل DEMO_PASSWORD (نسخة العرض).
+ * بدون TEAM_INITIAL_PASSWORD بنستعمل DEMO_PASSWORD (اسم المتغير الموجود على Render).
  */
 import { createPrisma } from "../lib/db";
 import { ensureTeam } from "../lib/team";
