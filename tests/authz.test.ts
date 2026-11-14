@@ -37,6 +37,7 @@ const SPEC: Array<[Permission, boolean, boolean]> = [
   ["audit:view", false, false], // سجل التعديلات: دعم النظام بس
   ["trash:view", false, false], // سلة المحذوفات: دعم النظام بس
   ["support:see", false, false], // حساب دعم النظام مخفي عن الكل
+  ["legacy:import", false, false], // نقل الزيارات القديمة
 ];
 
 describe("can()", () => {

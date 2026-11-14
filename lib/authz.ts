@@ -42,6 +42,7 @@ export const SUPPORT_PERMISSIONS = [
   "mikrotik:revealLog", // سجل عرض كلمات سر المايكروتيك
   "trash:view", // سلة المحذوفات والاسترجاع
   "support:see", // يشوف حساب دعم النظام بقائمة الحسابات
+  "legacy:import", // نقل الزيارات القديمة من الإكسل
 ] as const;
 
 export type Permission =

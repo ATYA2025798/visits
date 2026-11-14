@@ -20,6 +20,7 @@ import { postponeRevisit } from "../lib/revisits";
 import { requestReportEdit } from "../lib/edit-requests";
 import { saveCredential } from "../lib/mikrotik-credentials";
 import { todayLocal } from "../lib/dates";
+import { demoPurged } from "../lib/demo-purge";
 import type { Actor } from "../lib/authz";
 
 // عشوائي ثابت: نفس البيانات كل مرة
@@ -73,7 +74,7 @@ async function refreshDemoTexts() {
 
 /** ملفات شهرية تجريبية (الشهر الحالي والسابق) لصفحة «متابعة ملف الشهر»، إذا ما في ولا ملف */
 async function seedDemoTargets() {
-  if (await prisma.monthTarget.count()) return;
+  if ((await prisma.monthTarget.count()) || (await demoPurged(prisma))) return;
   const owner = await prisma.user.findFirst({ where: { role: { in: ["AMBASSADOR", "SUPPORT"] } } });
   if (!owner) return;
   const today = todayLocal();
@@ -118,12 +119,15 @@ async function main() {
   const password = process.env.DEMO_PASSWORD;
   if (!password || password.length < 8) throw new Error("DEMO_PASSWORD لازم ينضبط (8 أحرف على الأقل)");
   const [lines, visits] = await Promise.all([prisma.line.count(), prisma.visit.count()]);
-  if (lines || visits) {
+  // بعد حذف البيانات الوهمية ونقل بيانات حقيقية ما بنرجّع الوهمية
+  if (lines || visits || (await demoPurged(prisma))) {
     // --if-empty: للتشغيل التلقائي مع كل إقلاع (Render)؛ إذا البيانات موجودة ما بنعمل شي
     if (process.argv.includes("--if-empty")) {
-      await refreshDemoTexts().catch(warn);
-      await seedDemoTargets().catch(warn);
-      console.log("نسخة العرض فيها بيانات أصلاً");
+      if (!(await demoPurged(prisma))) {
+        await refreshDemoTexts().catch(warn);
+        await seedDemoTargets().catch(warn);
+      }
+      console.log((await demoPurged(prisma)) ? "البيانات الوهمية محذوفة؛ لن تُعاد" : "نسخة العرض فيها بيانات أصلاً");
       return;
     }
     throw new Error("قاعدة البيانات فيها بيانات. نسخة العرض لازم تكون على قاعدة فاضية.");
