@@ -1,5 +1,5 @@
 import { test, expect, type Browser } from "@playwright/test";
-import { loginAs, loginAsAli, loginAsBoss } from "./fixtures";
+import { loginAs, loginAsAli, loginAsBoss, loginAsSupport } from "./fixtures";
 
 async function newPage(browser: Browser) {
   const ctx = await browser.newContext();
@@ -34,7 +34,7 @@ test("السفير بيضيف سفير، الجديد بيدخل ويغيّر ك
   await amb.getByRole("button", { name: "حفظ" }).click();
   await expect(amb.getByText("تم تغيير كلمة السر")).toBeVisible();
   await amb.goto("/");
-  await expect(amb.getByRole("heading", { name: "أهلاً أحمد السفير" })).toBeVisible();
+  await expect(amb.getByRole("heading", { name: "مرحباً، أحمد السفير" })).toBeVisible();
 
   // 3) علي بيوقفه ← بيطلع فوراً
   await page.reload();
@@ -45,21 +45,32 @@ test("السفير بيضيف سفير، الجديد بيدخل ويغيّر ك
   await expect(amb).toHaveURL(/\/login$/);
   expect((await amb.request.get("/api/me")).status()).toBe(401);
 
-  // 4) كل هاد بالسجل، مع فلتر حسب الشخص
+  // 4) كل هاد بسجل العمليات، وهو لدعم النظام بس
   await page.goto("/admin/audit");
-  await expect(page.locator("table")).toContainText("أحمد السفير");
-  await expect(page.locator("table")).toContainText("فعّال"); // حقل «فعّال»: نعم ← لا
-  await page.getByLabel("الشخص").selectOption({ label: "أحمد السفير" });
-  await page.getByRole("button", { name: "عرض" }).click();
-  await expect(page).toHaveURL(/actor=/);
-  await expect(page.locator("tbody")).toContainText("تغيير كلمة السر");
-  await expect(page.locator("tbody td[data-label='الشخص']").filter({ hasText: "علي جبر" })).toHaveCount(0);
+  await expect(page).toHaveURL(/denied=1/);
+  const sup = await newPage(browser);
+  await loginAsSupport(sup);
+  await sup.goto("/admin/audit");
+  await expect(sup.locator("table")).toContainText("أحمد السفير");
+  await expect(sup.locator("table")).toContainText("فعّال"); // حقل «فعّال»: نعم ← لا
+  await sup.getByLabel("الشخص").selectOption({ label: "أحمد السفير" });
+  await sup.getByRole("button", { name: "عرض" }).click();
+  await expect(sup).toHaveURL(/actor=/);
+  await expect(sup.locator("tbody")).toContainText("تغيير كلمة السر");
+  await expect(sup.locator("tbody td[data-label='الشخص']").filter({ hasText: "علي جبر" })).toHaveCount(0);
+
+  // حساب دعم النظام مخفي عن السفير
+  await page.goto("/admin/users");
+  await expect(page.locator('tr[data-username="sys.support"]')).toHaveCount(0);
+  const list = await (await page.request.get("/api/users")).json();
+  expect(list.users.some((u: { username: string }) => u.username === "sys.support")).toBe(false);
 });
 
 test("المسؤول بيشوف كل شي للقراءة، وما بيقدر يغيّر ولا شي (حتى بطلب مباشر = 403)", async ({ page, baseURL }) => {
   await loginAsBoss(page);
-  await expect(page.locator(".sidebar")).toContainText("المستخدمون");
-  await expect(page.locator(".sidebar")).toContainText("سجل التعديلات");
+  // المسؤول دوره المتابعة: لا قسم إدارة ولا رقابة بالقائمة
+  await expect(page.locator(".sidebar")).toContainText("متابعة ملف الشهر");
+  await expect(page.locator(".sidebar")).not.toContainText("سجل العمليات");
 
   await page.goto("/admin/users");
   await expect(page.getByText("للاطلاع فقط")).toBeVisible();
@@ -68,7 +79,7 @@ test("المسؤول بيشوف كل شي للقراءة، وما بيقدر ي�
   await expect(page.locator('tr[data-username="ali"]').getByRole("button")).toHaveCount(0);
 
   await page.goto("/admin/audit");
-  await expect(page.getByRole("heading", { name: "سجل التعديلات" })).toBeVisible();
+  await expect(page).toHaveURL(/denied=1/);
 
   const users = await page.request.get("/api/users");
   expect(users.status()).toBe(200);

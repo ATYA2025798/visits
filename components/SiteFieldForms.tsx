@@ -36,7 +36,9 @@ export function VpnSiteForm() {
         setOpen(false);
         setMsg({
           ok: true,
-          text: r.data.previous ? `تم الحفظ. توجد ${r.data.previous} حالة سابقة بعنوان IP نفسه أو بالاسم نفسه.` : "تم الحفظ.",
+          text: r.data.previous
+            ? `تم الحفظ. توجد ${r.data.previous} حالة سابقة بعنوان IP نفسه أو بالاسم نفسه.`
+            : "تم الحفظ.",
         });
         router.refresh();
       }}

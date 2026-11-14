@@ -64,14 +64,14 @@ export default async function VisitPage({
       editRequests: { include: { requester: { select: { displayName: true } } }, orderBy: { createdAt: "desc" } },
     },
   });
-  if (!v) notFound();
+  if (!v || (v.deletedAt && !can(me, "trash:view"))) notFound();
   const [options, history, companions, photos] = await Promise.all([
     formOptions(),
     prisma.auditLog.findMany({
       where: { entity: "Visit", entityId: id },
       orderBy: { id: "desc" },
       take: 200,
-      include: { actor: { select: { displayName: true } } },
+      include: { actor: { select: { displayName: true, role: true } } },
     }),
     prisma.user.findMany({ where: { id: { in: v.companionIds } }, select: { displayName: true } }),
     prisma.attachment.findMany({ where: { entity: "Visit", entityId: id }, select: { id: true }, orderBy: { createdAt: "asc" } }),
@@ -111,7 +111,7 @@ export default async function VisitPage({
             </Link>
           )}
           {!deleted && can(me, "visits:delete") && <DeleteVisitButton visitId={v.id} label={visitLabel(v)} />}
-          {deleted && can(me, "visits:delete") && <RestoreVisitButton visitId={v.id} />}
+          {deleted && can(me, "trash:view") && <RestoreVisitButton visitId={v.id} />}
         </div>
       </div>
 
@@ -343,7 +343,7 @@ export default async function VisitPage({
                 {history.map((h) => (
                   <tr key={h.id.toString()}>
                     <td className="cell-main small">{fmtDateTime(h.at)}</td>
-                    <td data-label="المستخدم">{h.actor?.displayName ?? "النظام"}</td>
+                    <td data-label="المستخدم">{h.actor && (h.actor.role !== "SUPPORT" || can(me, "support:see")) ? h.actor.displayName : "النظام"}</td>
                     <td data-label="العملية" className="small">
                       {h.action === "CREATE"
                         ? "سجّل الزيارة"

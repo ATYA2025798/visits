@@ -24,7 +24,14 @@ type Panel = {
     accountManager: string | null;
   } | null;
   total: number;
-  visits: Array<{ id: string; day: string | null; owner: string | null; rec: string | null; color: string | null; action: string | null }>;
+  visits: Array<{
+    id: string;
+    day: string | null;
+    owner: string | null;
+    rec: string | null;
+    color: string | null;
+    action: string | null;
+  }>;
 };
 
 const GAZA: [number, number] = [31.42, 34.37];
@@ -205,7 +212,9 @@ export function MapView({ query, showVpn }: { query: string; showVpn: boolean })
                 </div>
                 <div>
                   <dt>المنطقة</dt>
-                  <dd>{[shown?.line?.region ?? panelPin.region, shown?.line?.locality].filter(Boolean).join(" · ") || "—"}</dd>
+                  <dd>
+                    {[shown?.line?.region ?? panelPin.region, shown?.line?.locality].filter(Boolean).join(" · ") || "—"}
+                  </dd>
                 </div>
                 {shown?.line?.accountManager && (
                   <div>

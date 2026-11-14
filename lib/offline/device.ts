@@ -34,7 +34,9 @@ export async function compressImage(file: File, maxSide = 1280, quality = 0.72):
 }
 
 export interface Bootstrap {
-  me: { id: string; displayName: string; canCreate: boolean };
+  me: { id: string; displayName: string; role?: string; canCreate: boolean };
+  /** أرقام المستخدم وقت آخر تحديث (قد تكون قديمة بدون اتصال) */
+  stats?: { today: number; month: number; openRevisits: number };
   recommendations: { id: string; label: string }[];
   actions: { id: string; label: string }[];
   ambassadors: { id: string; displayName: string }[];

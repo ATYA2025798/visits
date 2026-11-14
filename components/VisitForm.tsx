@@ -62,7 +62,10 @@ export function VisitForm({
       const d = await res.json();
       if (!d.valid) return setLookup({ text: "الكود غير صالح", tone: "warn" });
       if (!d.line)
-        return setLookup({ text: "الخط غير موجود في ملف المشتركين. يمكنك الحفظ بشكل اعتيادي مع إدخال اسم الحساب.", tone: "warn" });
+        return setLookup({
+          text: "الخط غير موجود في ملف المشتركين. يمكنك الحفظ بشكل اعتيادي مع إدخال اسم الحساب.",
+          tone: "warn",
+        });
       if (!v.accountName && d.line.accountName) set("accountName", d.line.accountName);
       setLookup({
         text: `${d.line.accountName ?? ""}${d.line.region ? ` · ${d.line.region}` : ""}${d.openRevisit ? ` · بانتظار إعادة زيارة للزيارة المؤرخة ${fmtIsoDay(d.openRevisit.visitedOn)}` : ""}`,
@@ -286,7 +289,8 @@ export function VisitForm({
       {mode === "request" && (
         <div className="card card-pad grid">
           <div className="alert alert-warn">
-            هذا التقرير يخص سفيراً آخر. سيصله التعديل على شكل طلب، ويطّلع على النسختين القديمة والجديدة جنباً إلى جنب قبل الموافقة.
+            هذا التقرير يخص سفيراً آخر. سيصله التعديل على شكل طلب، ويطّلع على النسختين القديمة والجديدة جنباً إلى جنب قبل
+            الموافقة.
           </div>
           <div className="field">
             <label htmlFor="reason">سبب التعديل</label>
@@ -297,7 +301,13 @@ export function VisitForm({
 
       <div className="actions">
         <button className="btn btn-primary" type="submit" disabled={busy}>
-          {busy ? "يُرجى الانتظار…" : mode === "create" ? "حفظ الزيارة" : mode === "edit" ? "حفظ التعديل" : "إرسال طلب التعديل"}
+          {busy
+            ? "يُرجى الانتظار…"
+            : mode === "create"
+              ? "حفظ الزيارة"
+              : mode === "edit"
+                ? "حفظ التعديل"
+                : "إرسال طلب التعديل"}
         </button>
         <button className="btn btn-ghost" type="button" onClick={() => router.back()}>
           إلغاء

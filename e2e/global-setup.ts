@@ -3,7 +3,7 @@ import { grantAppRole, migrate } from "../scripts/migrate.mjs";
 import { createPrisma } from "../lib/db";
 import { createUser } from "../lib/users";
 import { E2E_DATABASE_URL } from "../playwright.config";
-import { ALI, BOSS } from "./fixtures";
+import { ALI, BOSS, SUPPORT } from "./fixtures";
 
 /** قاعدة بيانات نظيفة لكل تشغيل، فيها سفير (علي) ومسؤول للقراءة */
 export default async function setup() {
@@ -31,5 +31,11 @@ export default async function setup() {
     { username: BOSS.username, displayName: BOSS.name, role: "MANAGER", password: BOSS.password },
     db,
   );
+  const sup = await createUser(
+    null,
+    { username: SUPPORT.username, displayName: SUPPORT.name, role: "MANAGER", password: SUPPORT.password },
+    db,
+  );
+  await db.user.update({ where: { id: sup.user.id }, data: { role: "SUPPORT" } });
   await db.$disconnect();
 }

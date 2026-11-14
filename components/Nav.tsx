@@ -2,38 +2,42 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Icon } from "./Icon";
 
-type Item = { href: string; label: string; soon?: boolean; count?: number; exact?: boolean };
+type Item = { href: string; label: string; icon?: string; soon?: boolean; count?: number; exact?: boolean };
 
 // الصفحات اللي جاية بالمراحل الجاية بتظهر «قريباً» عشان الشكل العام يبيّن من هلأ
 const MAIN: Item[] = [
-  { href: "/", label: "الرئيسية" },
-  { href: "/search", label: "البحث باستخدام Line Code" },
-  { href: "/visits", label: "الزيارات", exact: true },
-  { href: "/visits/mine", label: "زياراتي" },
-  { href: "/revisits", label: "إعادة الزيارة" },
-  { href: "/map", label: "الخريطة" },
-  { href: "/vpn", label: "حالات VPN" },
-  { href: "/cards", label: "البطاقات" },
-  { href: "/mikrotik/access", label: "بحاجة إلى صلاحية access" },
+  { href: "/", label: "الرئيسية", icon: "home" },
+  { href: "/search", label: "البحث باستخدام Line Code", icon: "search" },
+  { href: "/visits", label: "الزيارات", exact: true, icon: "list" },
+  { href: "/visits/mine", label: "زياراتي", icon: "user" },
+  { href: "/revisits", label: "إعادة الزيارة", icon: "refresh" },
+  { href: "/map", label: "الخريطة", icon: "map" },
+  { href: "/followup", label: "متابعة ملف الشهر", icon: "target" },
+  { href: "/vpn", label: "حالات VPN", icon: "shield" },
+  { href: "/cards", label: "البطاقات", icon: "card" },
+  { href: "/mikrotik/access", label: "بحاجة إلى صلاحية access", icon: "key" },
 ];
 
 // للسفراء بس
-const FIELD: Item[] = [
-  { href: "/m", label: "تطبيق الميدان" },
-  { href: "/mikrotik/reveals", label: "سجل عرض كلمات السر" },
-];
+const FIELD: Item[] = [{ href: "/m", label: "تطبيق الميدان", icon: "phone" }];
 
 const MANAGE: Item[] = [
-  { href: "/admin/lines", label: "خطوط المشتركين" },
-  { href: "/admin/import", label: "ملف الشهر" },
-  { href: "/admin/lists", label: "القوائم" },
-  { href: "/admin/users", label: "المستخدمون" },
-  { href: "/admin/trash", label: "سلة المحذوفات" },
-  { href: "/admin/audit", label: "سجل التعديلات" },
+  { href: "/admin/lines", label: "خطوط المشتركين", icon: "database" },
+  { href: "/admin/import", label: "ملف الشهر", icon: "upload" },
+  { href: "/admin/lists", label: "القوائم", icon: "sliders" },
+  { href: "/admin/users", label: "المستخدمون", icon: "users" },
 ];
 
-const ACCOUNT: Item[] = [{ href: "/account/password", label: "تغيير كلمة السر" }];
+// دعم النظام بس
+const OVERSIGHT: Item[] = [
+  { href: "/admin/audit", label: "سجل العمليات", icon: "history" },
+  { href: "/mikrotik/reveals", label: "سجل عرض كلمات السر", icon: "eye" },
+  { href: "/admin/trash", label: "سلة المحذوفات", icon: "trash" },
+];
+
+const ACCOUNT: Item[] = [{ href: "/account/password", label: "تغيير كلمة السر", icon: "lock" }];
 
 function NavItem({ item, path }: { item: Item; path: string }) {
   if (item.soon) {
@@ -52,7 +56,10 @@ function NavItem({ item, path }: { item: Item; path: string }) {
         : path.startsWith(item.href);
   return (
     <Link href={item.href} aria-current={active ? "page" : undefined}>
-      {item.label}
+      <span className="nav-label">
+        {item.icon && <Icon name={item.icon} />}
+        {item.label}
+      </span>
       {!!item.count && (
         <span className="badge badge-red" aria-label={`${item.count} بانتظارك`}>
           {item.count}
@@ -62,11 +69,23 @@ function NavItem({ item, path }: { item: Item; path: string }) {
   );
 }
 
-export function Nav({ showAdmin, isAmbassador, inbox }: { showAdmin: boolean; isAmbassador: boolean; inbox: number }) {
+export function Nav({
+  showAdmin,
+  isAmbassador,
+  isSupport,
+  inbox,
+}: {
+  showAdmin: boolean;
+  isAmbassador: boolean;
+  isSupport: boolean;
+  inbox: number;
+}) {
   const path = usePathname();
   // زياراتي وطلبات التعديل للسفير بس
   const main = MAIN.filter((i) => isAmbassador || i.href !== "/visits/mine");
-  const account = isAmbassador ? [{ href: "/inbox", label: "طلبات التعديل", count: inbox }, ...ACCOUNT] : ACCOUNT;
+  const account = isAmbassador
+    ? [{ href: "/inbox", label: "طلبات التعديل", count: inbox, icon: "inbox" }, ...ACCOUNT]
+    : ACCOUNT;
   return (
     <nav className="nav">
       {main.map((i) => (
@@ -84,6 +103,14 @@ export function Nav({ showAdmin, isAmbassador, inbox }: { showAdmin: boolean; is
         <>
           <div className="nav-group">الإدارة</div>
           {MANAGE.map((i) => (
+            <NavItem key={i.href} item={i} path={path} />
+          ))}
+        </>
+      )}
+      {isSupport && (
+        <>
+          <div className="nav-group">الرقابة</div>
+          {OVERSIGHT.map((i) => (
             <NavItem key={i.href} item={i} path={path} />
           ))}
         </>

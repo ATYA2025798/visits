@@ -72,7 +72,7 @@ test.describe("تطبيق الميدان", () => {
 
   test("المسؤول: ما بيسجّل من الميدان ولا بيشوف كلمات سر المايكروتيك", async ({ page, baseURL }) => {
     await loginAs(page, BOSS.username, BOSS.password);
-    await expect(page.getByRole("heading", { name: `أهلاً ${BOSS.name}` })).toBeVisible();
+    await expect(page.getByRole("heading", { name: `مرحباً، ${BOSS.name}` })).toBeVisible();
     await expect(page.getByRole("link", { name: "تطبيق الميدان" })).toHaveCount(0);
     const headers = { Origin: baseURL! };
     const sync = await page.request.post("/api/sync", {

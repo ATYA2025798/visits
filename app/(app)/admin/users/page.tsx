@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requirePermission } from "@/lib/session";
 import { prisma } from "@/lib/db";
-import { publicUserSelect } from "@/lib/users";
+import { publicUserSelect, visibleUsersWhere } from "@/lib/users";
 import { can } from "@/lib/authz";
 import { UsersManager, type UserRow } from "./UsersManager";
 
@@ -14,6 +14,7 @@ export const metadata: Metadata = { title: "المستخدمون" };
 export default async function UsersPage() {
   const me = await requirePermission("users:view");
   const users = await prisma.user.findMany({
+    where: visibleUsersWhere(me),
     select: { ...publicUserSelect, sessions: { select: { lastSeenAt: true }, orderBy: { lastSeenAt: "desc" } } },
     orderBy: [{ active: "desc" }, { role: "asc" }, { createdAt: "asc" }],
   });

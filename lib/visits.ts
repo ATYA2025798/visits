@@ -304,7 +304,7 @@ export async function deleteVisit(actor: Actor, visitId: string, db: Db = defaul
 }
 
 export async function restoreVisit(actor: Actor, visitId: string, db: Db = defaultPrisma) {
-  if (!can(actor, "visits:delete")) throw forbidden();
+  if (!can(actor, "trash:view")) throw forbidden();
   return withAudit(
     actor.id,
     async (tx, audit) => {

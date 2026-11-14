@@ -70,6 +70,50 @@ async function refreshDemoTexts() {
   }
 }
 
+
+/** ملفات شهرية تجريبية (الشهر الحالي والسابق) لصفحة «متابعة ملف الشهر»، إذا ما في ولا ملف */
+async function seedDemoTargets() {
+  if (await prisma.monthTarget.count()) return;
+  const owner = await prisma.user.findFirst({ where: { role: { in: ["AMBASSADOR", "SUPPORT"] } } });
+  if (!owner) return;
+  const today = todayLocal();
+  const cur = today.slice(0, 7);
+  const [y, m] = cur.split("-").map(Number);
+  const pd = new Date(Date.UTC(y, m - 2, 1));
+  const prev = `${pd.getUTCFullYear()}-${String(pd.getUTCMonth() + 1).padStart(2, "0")}`;
+  const range = (ym: string) => {
+    const [a, b] = ym.split("-").map(Number);
+    return { gte: new Date(Date.UTC(a, b - 1, 1)), lt: new Date(Date.UTC(a, b, 1)) };
+  };
+  const visitedIn = async (ym: string) =>
+    new Set(
+      (await prisma.visit.findMany({ where: { deletedAt: null, visitedOn: range(ym) }, select: { lineCodeKey: true } }))
+        .map((v) => v.lineCodeKey)
+        .filter(Boolean) as string[],
+    );
+  const lines = await prisma.line.findMany({ orderBy: { code: "asc" } });
+  const [vPrev, vCur] = [await visitedIn(prev), await visitedIn(cur)];
+  const prevVisited = lines.filter((l) => vPrev.has(l.codeKey)).slice(0, 38);
+  const prevMissed = lines.filter((l) => !vPrev.has(l.codeKey) && !vCur.has(l.codeKey)).slice(0, 12);
+  const prevLate = lines.filter((l) => !vPrev.has(l.codeKey) && vCur.has(l.codeKey)).slice(0, 4);
+  const prevSet = [...prevVisited, ...prevMissed, ...prevLate];
+  const curVisited = lines.filter((l) => vCur.has(l.codeKey) && !prevSet.includes(l)).slice(0, 26);
+  const curOthers = lines.filter((l) => !vCur.has(l.codeKey) && !prevSet.includes(l)).slice(0, 14);
+  const curSet = [...curVisited, ...curOthers, ...prevMissed.slice(0, 8), ...prevLate];
+  for (const [ym, set] of [
+    [prev, prevSet],
+    [cur, curSet],
+  ] as const) {
+    const imp = await prisma.import.create({
+      data: { month: ym, fileName: `زيارات-${ym}.xlsx`, fileSha256: `demo-${ym}`, importedById: owner.id, stats: { demo: true } },
+    });
+    await prisma.monthTarget.createMany({
+      data: set.map((l) => ({ month: ym, lineId: l.id, sheet: "زيارات الشهر", region: l.region, importId: imp.id })),
+      skipDuplicates: true,
+    });
+  }
+}
+
 async function main() {
   const password = process.env.DEMO_PASSWORD;
   if (!password || password.length < 8) throw new Error("DEMO_PASSWORD لازم ينضبط (8 أحرف على الأقل)");
@@ -78,6 +122,7 @@ async function main() {
     // --if-empty: للتشغيل التلقائي مع كل إقلاع (Render)؛ إذا البيانات موجودة ما بنعمل شي
     if (process.argv.includes("--if-empty")) {
       await refreshDemoTexts().catch(warn);
+      await seedDemoTargets().catch(warn);
       console.log("نسخة العرض فيها بيانات أصلاً");
       return;
     }
@@ -217,8 +262,9 @@ async function main() {
     await createCard(pick(amb), { name: `بطاقة ${pick(WORD)}-NET`, price: pick([2, 3, 5, 5, 10]), ip: `10.${int(100, 120)}.${int(0, 255)}.${int(1, 254)}` }, { filledAt: at });
   }
 
+  await seedDemoTargets().catch(warn);
   console.log(`نسخة العرض جاهزة: ${allLines.length} خط، ${made} زيارة، 18 حالة VPN، 40 بطاقة`);
-  console.log("الحسابات: ali, sami, yousef (سفراء) و boss (مسؤول) — كلها بكلمة السر DEMO_PASSWORD");
+  console.log("حسابات التجربة أُنشئت، وتُحوَّل لحسابات الفريق عبر scripts/ensure-team.ts --adopt-demo");
 }
 
 main()

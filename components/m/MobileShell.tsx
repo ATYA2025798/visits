@@ -163,7 +163,7 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
         )}
         {bootState === "cache" && !online && boot && (
           <div className="small muted" style={{ margin: "8px 14px 0" }}>
-            القوائم من آخر مرة اتصلت ({fmtDateTime(new Date(boot.savedAt))}).
+            آخر تحديث للبيانات: {fmtDateTime(new Date(boot.savedAt))}
           </div>
         )}
         <main className="m-main">{children}</main>

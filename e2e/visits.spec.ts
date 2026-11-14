@@ -1,5 +1,5 @@
 import { test, expect, type Page, type Browser } from "@playwright/test";
-import { loginAs, loginAsAli, loginAsBoss } from "./fixtures";
+import { loginAs, loginAsAli, loginAsBoss, loginAsSupport } from "./fixtures";
 
 const SAMI = { username: "sami.v", name: "سامي", password: "sami-pass-123" };
 
@@ -139,7 +139,7 @@ test.describe.serial("الزيارات من أولها لآخرها", () => {
     await expect(page.locator("tbody tr").nth(2)).toContainText("مكرر");
   });
 
-  test("الحذف لسلة المحذوفات والاسترجاع", async ({ page }) => {
+  test("الحذف لسلة المحذوفات والاسترجاع", async ({ page, browser }) => {
     await loginAsAli(page);
     await page.goto("/visits?q=G-7000-002");
     const before = await page.locator("tbody tr").count();
@@ -149,9 +149,14 @@ test.describe.serial("الزيارات من أولها لآخرها", () => {
     await expect(page.getByText("تم حذف الزيارة")).toBeVisible();
     await page.goto("/visits?q=G-7000-002");
     await expect(page.locator("tbody tr")).toHaveCount(before - 1);
+    // السلة لدعم النظام بس
     await page.goto("/admin/trash");
-    await page.getByRole("button", { name: "استرجاع" }).first().click();
-    await expect(page.getByText("سلة المحذوفات فارغة")).toBeVisible();
+    await expect(page).toHaveURL(/denied=1/);
+    const sup = await (await browser.newContext()).newPage();
+    await loginAsSupport(sup);
+    await sup.goto("/admin/trash");
+    await sup.getByRole("button", { name: "استرجاع" }).first().click();
+    await expect(sup.getByText("سلة المحذوفات فارغة")).toBeVisible();
   });
 
   test("المسؤول بيشوف كل شي للقراءة، وأي تعديل مباشر = 403", async ({ page, baseURL }) => {

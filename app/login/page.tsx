@@ -13,12 +13,6 @@ export default async function LoginPage() {
     <main className="auth">
       <div className="auth-card">
         <DemoBanner />
-        {process.env.DEMO_MODE === "true" && (
-          <p className="small muted" style={{ textAlign: "center", margin: "0 0 10px" }}>
-            حسابات التجربة: <b className="ltr">ali</b> و<b className="ltr">sami</b> و<b className="ltr">yousef</b> (سفراء)،{" "}
-            <b className="ltr">boss</b> (مسؤول للقراءة)
-          </p>
-        )}
         <div className="card">
           <div className="card-pad">
             <div style={{ textAlign: "center" }}>

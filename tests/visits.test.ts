@@ -200,7 +200,9 @@ describe("تعديل الزيارة (المهمة 10)", () => {
     await deleteVisit(sami, visit.id);
     expect((await prisma.visit.findUniqueOrThrow({ where: { id: visit.id } })).deletedAt).not.toBeNull();
     await expect(updateStatus(ali, visit.id, { recommendationId: fine })).rejects.toMatchObject({ status: 404 });
-    await restoreVisit(sami, visit.id);
+    // الاسترجاع من السلة لدعم النظام بس
+    await expect(restoreVisit(sami, visit.id)).rejects.toMatchObject({ status: 403 });
+    await restoreVisit({ id: sami.id, role: "SUPPORT", active: true }, visit.id);
     expect((await prisma.visit.findUniqueOrThrow({ where: { id: visit.id } })).deletedAt).toBeNull();
     expect(await prisma.auditLog.count({ where: { entityId: visit.id, action: { in: ["DELETE", "RESTORE"] } } })).toBe(
       2,

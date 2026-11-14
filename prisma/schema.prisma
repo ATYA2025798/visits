@@ -13,6 +13,7 @@ datasource db {
 enum Role {
   AMBASSADOR // سفير: بيعمل كل شي
   MANAGER // مسؤول: بيشوف كل شي للقراءة بس
+  SUPPORT // دعم النظام: حساب مخفي، كل الصلاحيات والرقابة
 }
 
 model User {

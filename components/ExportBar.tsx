@@ -14,9 +14,7 @@ export function ExportBar({ values, total }: { values: FilterValues; total: numb
           <input key={k} type="hidden" name={k} value={v} />
         ) : null,
       )}
-      <span className="small muted">
-        تصدير الزيارات المحددة، أو جميع النتائج ({total}) في حال عدم التحديد:
-      </span>
+      <span className="small muted">تصدير الزيارات المحددة، أو جميع النتائج ({total}) في حال عدم التحديد:</span>
       <span className="actions">
         <button className="btn btn-ghost btn-sm" name="format" value="xlsx">
           Excel

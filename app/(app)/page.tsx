@@ -1,11 +1,15 @@
-import { fmtLongDate } from "@/lib/format";
+import { fmtLongDate, fmtMonth } from "@/lib/format";
 import Link from "next/link";
 import { requireUser } from "@/lib/session";
 import { can } from "@/lib/authz";
 import { dashboardStats } from "@/lib/stats";
+import { followupMonths, monthFollowup } from "@/lib/followup";
 import { todayLocal } from "@/lib/dates";
+import { ROLE_LABEL } from "@/lib/roles";
 import { MonthlyChart } from "@/components/charts/MonthlyChart";
 import { BarList } from "@/components/charts/BarList";
+import { Icon } from "@/components/Icon";
+import { ProgressRing, Trend } from "@/components/ProgressRing";
 
 const nf = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
@@ -13,21 +17,22 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const user = await requireUser();
   const { denied } = await searchParams;
   const today = todayLocal();
-  const isAmb = user.role === "AMBASSADOR";
+  const isAmb = can(user, "visits:mine");
 
   const header = (
     <div className="page-head">
       <div>
-        <h1>أهلاً {user.displayName}</h1>
+        <div className="eyebrow">لوحة المتابعة · {ROLE_LABEL[user.role]}</div>
+        <h1>مرحباً، {user.displayName}</h1>
         <p className="muted">{fmtLongDate(new Date())}</p>
       </div>
       {can(user, "visits:create") && (
         <div className="actions">
-          <Link className="btn btn-primary" href="/visits/new">
-            زيارة جديدة
-          </Link>
           <Link className="btn btn-ghost" href="/search">
-            البحث باستخدام Line Code
+            <Icon name="search" size={16} /> البحث باستخدام Line Code
+          </Link>
+          <Link className="btn btn-primary" href="/visits/new">
+            <Icon name="plus" size={16} /> زيارة جديدة
           </Link>
         </div>
       )}
@@ -35,8 +40,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   );
 
   if (!can(user, "stats:view")) return header;
-  const s = await dashboardStats({ today, userId: user.id });
-  const month = today.slice(0, 7);
+  const [s, months] = await Promise.all([dashboardStats({ today, userId: user.id }), followupMonths()]);
+  const fu = months[0] ? await monthFollowup(months[0]) : null;
   const a = s.alerts;
 
   return (
@@ -48,63 +53,123 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </div>
       )}
 
-      <section className="kpis" aria-label="الأرقام">
-        <Link className="card stat" href={`/visits?from=${today}&to=${today}`}>
-          <div className="label">زيارات اليوم</div>
-          <div className="value">{s.visits.today}</div>
-          <div className="sub">
-            هذا الأسبوع {s.visits.week} · هذا الشهر {s.visits.month}
-          </div>
+      <section className="kpis" aria-label="الأرقام" style={{ marginBottom: 16 }}>
+        <Link className="card kpi kpi-blue" href={`/visits?from=${today}&to=${today}`}>
+          <span className="kpi-icon">
+            <Icon name="calendar" size={20} />
+          </span>
+          <span className="kpi-body">
+            <div className="label">زيارات اليوم</div>
+            <div className="value">{s.visits.today}</div>
+            <div className="sub">
+              هذا الأسبوع {s.visits.week} · هذا الشهر {s.visits.month}
+            </div>
+          </span>
         </Link>
-        <div className="card stat">
-          <div className="label">نسبة التجاوزات هذا الشهر</div>
-          <div className="value">
-            {nf.format(s.violations.monthRate)}
-            <span className="unit">%</span>
-          </div>
-          <div className="sub">
-            {s.violations.month} من {s.visits.month} زيارة · الكلي {nf.format(s.violations.totalRate)}%
-          </div>
+        <Link className="card kpi kpi-green" href={fu ? `/followup?month=${fu.month}` : "/followup"}>
+          <span className="kpi-icon">
+            <Icon name="target" size={20} />
+          </span>
+          <span className="kpi-body">
+            <div className="label">إنجاز ملف الشهر{fu ? ` · ${fmtMonth(fu.month)}` : ""}</div>
+            <div className="value">
+              {fu ? nf.format(fu.rate) : "—"}
+              {fu && <span className="unit">%</span>}
+            </div>
+            <div className="sub">
+              {fu ? (
+                <>
+                  {fu.visited} من {fu.total} خط <Trend now={fu.rate} before={fu.previousRate} />
+                </>
+              ) : (
+                "لم يُرفع ملف شهري بعد"
+              )}
+            </div>
+          </span>
+        </Link>
+        <div className="card kpi kpi-navy">
+          <span className="kpi-icon">
+            <Icon name="alert" size={20} />
+          </span>
+          <span className="kpi-body">
+            <div className="label">نسبة التجاوزات هذا الشهر</div>
+            <div className="value">
+              {nf.format(s.violations.monthRate)}
+              <span className="unit">%</span>
+            </div>
+            <div className="sub">
+              {s.violations.month} من {s.visits.month} زيارة · الإجمالي {nf.format(s.violations.totalRate)}%
+            </div>
+          </span>
         </div>
-        <Link className="card stat" href="/revisits">
-          <div className="label">بانتظار إعادة زيارة</div>
-          <div className="value">{s.openRevisits}</div>
-          <div className="sub">{a.postponedTwice.length} مؤجلة أكثر من مرة</div>
-        </Link>
-        <Link className="card stat" href={`/cards?month=${month}`}>
-          <div className="label">مصروف البطاقات هذا الشهر</div>
-          <div className="value">
-            {nf.format(s.cards.monthTotal)}
-            <span className="unit">₪</span>
-          </div>
-          <div className="sub">{s.cards.monthCount} بطاقة</div>
+        <Link className="card kpi kpi-amber" href="/revisits">
+          <span className="kpi-icon">
+            <Icon name="refresh" size={20} />
+          </span>
+          <span className="kpi-body">
+            <div className="label">بانتظار إعادة زيارة</div>
+            <div className="value">{s.openRevisits}</div>
+            <div className="sub">{a.postponedTwice.length} مؤجلة أكثر من مرة</div>
+          </span>
         </Link>
       </section>
 
-      <div className="dash-grid">
-        <section className="card" aria-label="الزيارات شهرياً" style={{ gridColumn: "1 / -1" }}>
+      <div className="dash-row">
+        <section className="card" aria-label="الزيارات شهرياً">
           <div className="card-head">
             <h2>الزيارات شهرياً حسب التوصية</h2>
-            <span className="muted small">{s.visits.total} زيارة في المجموع</span>
+            <span className="hint">{s.visits.total} زيارة في المجموع</span>
           </div>
           <div className="card-pad">
             <MonthlyChart months={s.monthly} />
           </div>
         </section>
 
-        <section className="card" aria-label="توزيع الإجراءات">
+        <section className="card progress-card" aria-label="متابعة ملف الشهر">
           <div className="card-head">
-            <h2>توزيع الإجراءات</h2>
-            <span className="muted small">كل الزيارات</span>
+            <h2>متابعة ملف الشهر</h2>
+            {fu && <span className="hint">{fmtMonth(fu.month)}</span>}
           </div>
-          <div className="card-pad">
-            <BarList rows={s.actions} muted={["بدون إجراء"]} />
-          </div>
+          {fu ? (
+            <>
+              <div className="ring-wrap">
+                <ProgressRing value={fu.rate} label="نسبة الإنجاز" />
+                <div className="ring-facts">
+                  <div>
+                    <span className="muted">المطلوب</span> <b>{fu.total}</b>
+                  </div>
+                  <div>
+                    <span className="muted">تمت زيارته</span> <b>{fu.visited}</b>
+                  </div>
+                  <div>
+                    <span className="muted">لم تتم زيارته</span> <b>{fu.pending}</b>
+                  </div>
+                  <div>
+                    <span className="muted">متأخر من الشهر السابق</span>{" "}
+                    <b>{fu.overdue.filter((o) => !o.resolvedThisMonth).length}</b>
+                  </div>
+                  {fu.previousRate !== null && (
+                    <div>
+                      <span className="muted">الشهر السابق</span> <b className="ltr">{fu.previousRate}%</b>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="card-foot">
+                <Link href={`/followup?month=${fu.month}`}>عرض التفاصيل الكاملة</Link>
+              </div>
+            </>
+          ) : (
+            <div className="empty">لم يُرفع ملف شهري بعد.</div>
+          )}
         </section>
+      </div>
 
+      <div className="dash-row dash-row-even">
         <section className="card" aria-label="زيارات كل سفير">
           <div className="card-head">
-            <h2>زيارات كل سفير</h2>
+            <h2>أداء السفراء</h2>
+            <span className="hint">عدد الزيارات</span>
           </div>
           <div className="table-wrap">
             <table className="table">
@@ -112,7 +177,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 <tr>
                   <th>السفير</th>
                   <th>هذا الشهر</th>
-                  <th>الكل</th>
+                  <th>الإجمالي</th>
                 </tr>
               </thead>
               <tbody>
@@ -130,9 +195,21 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           </div>
         </section>
 
-        <section className="card" aria-label="تنبيهات" style={{ gridColumn: "1 / -1" }}>
+        <section className="card" aria-label="توزيع الإجراءات">
           <div className="card-head">
-            <h2>تنبيهات</h2>
+            <h2>توزيع الإجراءات</h2>
+            <span className="hint">جميع الزيارات</span>
+          </div>
+          <div className="card-pad">
+            <BarList rows={s.actions} muted={["بدون إجراء"]} />
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section className="card" aria-label="تنبيهات">
+          <div className="card-head">
+            <h2>تنبيهات تتطلب المتابعة</h2>
           </div>
           <div className="alerts-grid">
             <div>
@@ -170,7 +247,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                       <Link href={`/visits/${v.id}`}>
                         <span className="ltr">{v.lineCode ?? "حالة خاصة"}</span>
                       </Link>{" "}
-                      <span className="muted small">تأجلت {v.postponeCount} مرات</span>
+                      <span className="muted small">عدد مرات التأجيل: {v.postponeCount}</span>
                     </li>
                   ))}
                 </ul>

@@ -8,7 +8,7 @@ import { RestoreVisitButton } from "@/components/VisitActions";
 export const metadata: Metadata = { title: "سلة المحذوفات" };
 
 export default async function TrashPage() {
-  const me = await requirePermission("visits:view");
+  const me = await requirePermission("trash:view");
   const { rows, total } = await listVisits({ deleted: true }, { pageSize: 200 });
   return (
     <>
@@ -40,7 +40,7 @@ export default async function TrashPage() {
                       {v.lineCode ?? "—"}
                     </td>
                     <td className="cell-actions">
-                      {can(me, "visits:delete") && <RestoreVisitButton visitId={v.id} />}
+                      {can(me, "trash:view") && <RestoreVisitButton visitId={v.id} />}
                     </td>
                   </tr>
                 ))}

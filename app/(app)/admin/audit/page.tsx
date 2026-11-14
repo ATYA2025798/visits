@@ -50,6 +50,7 @@ const VALUE_LABEL: Record<string, string> = {
   MANAGER: "مسؤول",
   ADMIN: "مسؤول",
   AMBASSADOR: "سفير",
+  SUPPORT: "دعم النظام",
   true: "نعم",
   false: "لا",
 };
@@ -118,7 +119,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
     <>
       <div className="page-head">
         <div>
-          <h1>سجل التعديلات</h1>
+          <h1>سجل العمليات</h1>
           <p className="muted">جميع عمليات الإضافة والتعديل والحذف في النظام، ومن قام بها ومتى. ولا يمكن تعديل هذا السجل أو حذفه.</p>
         </div>
       </div>

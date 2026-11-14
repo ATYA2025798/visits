@@ -78,7 +78,8 @@ describe("apiUser / apiRequire", () => {
     expect(u.username).toBe("boss");
     await expect(apiRequire(req("GET", { cookie: r.token }), "users:manage")).rejects.toMatchObject({ status: 403 });
     await expect(apiRequire(req("GET", { cookie: r.token }), "visits:create")).rejects.toMatchObject({ status: 403 });
-    await expect(apiRequire(req("GET", { cookie: r.token }), "audit:view")).resolves.toMatchObject({
+    await expect(apiRequire(req("GET", { cookie: r.token }), "audit:view")).rejects.toMatchObject({ status: 403 });
+    await expect(apiRequire(req("GET", { cookie: r.token }), "stats:view")).resolves.toMatchObject({
       username: "boss",
     });
   });

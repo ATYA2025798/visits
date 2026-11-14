@@ -1,7 +1,6 @@
 import { fmtDateTime } from "@/lib/format";
 import { PrintButton } from "./PrintButton";
 
-
 /** رأس صفحة الطباعة: العنوان، وصف قصير، مين طلع التقرير ومتى، ولوجو جوال */
 export function PrintHeader({ title, subtitle, by }: { title: string; subtitle?: string; by: string }) {
   return (

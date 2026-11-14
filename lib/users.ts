@@ -7,6 +7,7 @@ import { withAudit } from "./audit";
 import { ApiError, notFound } from "./errors";
 import { generateTempPassword, hashPassword, MIN_PASSWORD_LENGTH, verifyPassword } from "./password";
 import { normalizeUsername } from "./auth";
+import { can, type Actor } from "./authz";
 
 export const usernameSchema = z
   .string()
@@ -58,6 +59,20 @@ export const publicUserSelect = {
   mustChangePassword: true,
   createdAt: true,
 } as const;
+
+/** حساب دعم النظام مخفي: ما بيطلع بالقوائم، وما حدا غيره بيقدر يعدّله */
+export function visibleUsersWhere(actor: { role: string; active: boolean; id: string } | null) {
+  return actor && can(actor as Actor, "support:see") ? {} : { role: { not: "SUPPORT" as const } };
+}
+
+async function loadManagedUser(tx: Tx, actorId: string, userId: string) {
+  const [actor, user] = await Promise.all([
+    tx.user.findUnique({ where: { id: actorId } }),
+    tx.user.findUnique({ where: { id: userId } }),
+  ]);
+  if (!user || (user.role === "SUPPORT" && actor?.role !== "SUPPORT")) throw notFound();
+  return user;
+}
 
 const AUDITED_FIELDS = ["username", "displayName", "role", "active"] as const;
 
@@ -121,6 +136,7 @@ export async function updateUser(
       if (actorId === userId && (input.active === false || (input.role !== undefined && input.role !== "AMBASSADOR"))) {
         throw new ApiError(409, "لا يمكنك إيقاف حسابك أو تغيير دورك");
       }
+      await loadManagedUser(tx, actorId, userId);
       const before = await assertAmbassadorRemains(tx, userId, input);
       const after = await tx.user.update({ where: { id: userId }, data: input, select: publicUserSelect });
       audit.updated("User", userId, before, after, { fields: AUDITED_FIELDS });
@@ -141,8 +157,7 @@ export async function resetPassword(actorId: string, userId: string, db: Db = de
   await withAudit(
     actorId,
     async (tx, audit) => {
-      const user = await tx.user.findUnique({ where: { id: userId } });
-      if (!user) throw notFound();
+      await loadManagedUser(tx, actorId, userId);
       await tx.user.update({
         where: { id: userId },
         data: { passwordHash, mustChangePassword: true, failedLoginCount: 0, lockedUntil: null },
@@ -160,8 +175,7 @@ export async function revokeSessions(actorId: string, userId: string, db: Db = d
   return withAudit(
     actorId,
     async (tx, audit) => {
-      const user = await tx.user.findUnique({ where: { id: userId } });
-      if (!user) throw notFound();
+      await loadManagedUser(tx, actorId, userId);
       const { count } = await tx.session.deleteMany({ where: { userId } });
       audit.event("SESSIONS_REVOKED", "User", userId, `تم إلغاء ${count} جلسة`);
       return { revoked: count };

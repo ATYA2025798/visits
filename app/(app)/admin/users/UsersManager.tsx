@@ -10,7 +10,7 @@ export interface UserRow {
   id: string;
   username: string;
   displayName: string;
-  role: "MANAGER" | "AMBASSADOR";
+  role: "MANAGER" | "AMBASSADOR" | "SUPPORT";
   active: boolean;
   locked: boolean;
   lockedUntil: string | null;
@@ -154,7 +154,7 @@ export function UsersManager({
                     </td>
                     <td data-label="الدور">
                       <span
-                        className={`badge ${u.role === "MANAGER" ? "badge-blue" : "badge-green"}`}
+                        className={`badge ${u.role === "MANAGER" ? "badge-blue" : u.role === "SUPPORT" ? "badge-warn" : "badge-green"}`}
                         title={ROLE_HINT[u.role]}
                       >
                         {ROLE_LABEL[u.role]}

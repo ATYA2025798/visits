@@ -6,6 +6,7 @@ import {
   reportEditDecision,
   READ_PERMISSIONS,
   WRITE_PERMISSIONS,
+  SUPPORT_PERMISSIONS,
   type Actor,
   type Permission,
 } from "@/lib/authz";
@@ -13,6 +14,7 @@ import {
 const ambassador: Actor = { id: "amb-1", role: "AMBASSADOR", active: true };
 const otherAmbassador: Actor = { id: "amb-2", role: "AMBASSADOR", active: true };
 const manager: Actor = { id: "mgr-1", role: "MANAGER", active: true };
+const support: Actor = { id: "sup-1", role: "SUPPORT", active: true };
 const disabledAmbassador: Actor = { id: "amb-3", role: "AMBASSADOR", active: false };
 
 // جدول «المستخدمون والصلاحيات» بالمواصفات (بعد تصحيح علي 2026-11-13):
@@ -21,7 +23,6 @@ const SPEC: Array<[Permission, boolean, boolean]> = [
   // [الصلاحية, السفير, المسؤول]
   ["visits:view", true, true], // يشوف كل الزيارات ويبحث بالـ Line Code، ويشوف مين زار
   ["stats:view", true, true], // الخريطة والإحصائيات
-  ["audit:view", true, true], // سجل التعديلات
   ["export", true, true], // PDF وExcel
   ["users:view", true, true], // قائمة الحسابات
   ["visits:mine", true, false], // صفحة «زياراتي»
@@ -32,13 +33,17 @@ const SPEC: Array<[Permission, boolean, boolean]> = [
   ["lists:manage", true, false], // القوائم والأسئلة
   ["subscribers:import", true, false], // الملف الشهري والحساب الطارئ
   ["mikrotik:reveal", true, false], // كلمة سر المايكروتيك
-  ["mikrotik:revealLog", true, false], // سجل عرض كلمات السر
+  ["mikrotik:revealLog", false, false], // سجل عرض كلمات السر: دعم النظام بس
+  ["audit:view", false, false], // سجل التعديلات: دعم النظام بس
+  ["trash:view", false, false], // سلة المحذوفات: دعم النظام بس
+  ["support:see", false, false], // حساب دعم النظام مخفي عن الكل
 ];
 
 describe("can()", () => {
   it.each(SPEC)("%s → سفير %s، مسؤول %s", (perm, amb, mgr) => {
     expect(can(ambassador, perm)).toBe(amb);
     expect(can(manager, perm)).toBe(mgr);
+    expect(can(support, perm)).toBe(true);
   });
 
   it("المسؤول ما عنده ولا صلاحية بتغيّر شي", () => {
@@ -49,8 +54,9 @@ describe("can()", () => {
 
   it("كل صلاحية بالكود موجودة بجدول المواصفات (ما في صلاحية منسية)", () => {
     const inSpec = new Set(SPEC.map(([p]) => p));
-    for (const p of [...READ_PERMISSIONS, ...WRITE_PERMISSIONS]) expect(inSpec.has(p), p).toBe(true);
-    expect(inSpec.size).toBe(READ_PERMISSIONS.length + WRITE_PERMISSIONS.length);
+    const all = [...READ_PERMISSIONS, ...WRITE_PERMISSIONS, ...SUPPORT_PERMISSIONS];
+    for (const p of all) expect(inSpec.has(p), p).toBe(true);
+    expect(inSpec.size).toBe(all.length);
   });
 
   it("الحساب الموقوف ما عنده ولا صلاحية", () => {

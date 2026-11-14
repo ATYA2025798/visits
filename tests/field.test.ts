@@ -202,7 +202,9 @@ describe("بيانات دخول المايكروتيك (المهمة 19)", () =>
       username: "jawwal",
       password: "Mk-Secret-99",
     });
-    const log = await revealLog(sami);
+    // السجل لدعم النظام بس
+    await expect(revealLog(sami)).rejects.toMatchObject({ status: 403 });
+    const log = await revealLog({ id: sami.id, role: "SUPPORT", active: true });
     expect(log).toHaveLength(1);
     expect(log[0]).toMatchObject({ lineCodeKey: "G7872002", user: { displayName: "sami" } });
     await expect(prisma.mikrotikReveal.deleteMany({})).rejects.toThrow(/append-only/);

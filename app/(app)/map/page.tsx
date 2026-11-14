@@ -22,7 +22,7 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
       <div className="page-head">
         <div>
           <h1>الخريطة</h1>
-          <p className="muted">يظهر دبوس لكل خط وفق آخر زيارة مسجّل فيها موقع، ويُلوَّن حسب آخر توصية.</p>
+          <p className="muted">يظهر على الخريطة كل خط له زيارة مسجّل فيها موقع، بلون توصيته، مع إمكانية الفرز حسب التوصية والمنطقة والسفير والفترة.</p>
         </div>
       </div>
 
@@ -38,7 +38,7 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
             </select>
           </div>
           <div className="field">
-            <label htmlFor="rec">آخر توصية</label>
+            <label htmlFor="rec">الفرز حسب التوصية</label>
             <select id="rec" name="rec" className="select" defaultValue={sp.rec ?? ""}>
               <option value="">الكل</option>
               {opts.recommendations.map((r) => (

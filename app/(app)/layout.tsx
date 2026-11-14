@@ -11,7 +11,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // كل صفحة بتفحص الدخول والصلاحية بنفسها كمان (requireUser / requirePermission)
   const user = await requireUser({ passwordPage: true });
 
-  const showAdmin = can(user, "users:view") || can(user, "audit:view");
+  // المسؤول دوره المتابعة والإحصائيات، فقسم الإدارة لمن يملك صلاحية التعديل
+  const showAdmin = can(user, "lists:manage");
+  const isSupport = can(user, "audit:view");
   const isAmbassador = can(user, "visits:mine");
   const inbox = isAmbassador
     ? await prisma.editRequest.count({ where: { status: "PENDING", visit: { ownerId: user.id, deletedAt: null } } })
@@ -35,7 +37,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="sidebar-head">
           <Brand />
         </div>
-        <Nav showAdmin={showAdmin} isAmbassador={isAmbassador} inbox={inbox} />
+        <Nav showAdmin={showAdmin} isAmbassador={isAmbassador} isSupport={isSupport} inbox={inbox} />
         {foot}
       </aside>
 
@@ -53,7 +55,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </svg>
           </span>
         </summary>
-        <Nav showAdmin={showAdmin} isAmbassador={isAmbassador} inbox={inbox} />
+        <Nav showAdmin={showAdmin} isAmbassador={isAmbassador} isSupport={isSupport} inbox={inbox} />
         {foot}
       </details>
 
