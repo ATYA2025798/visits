@@ -47,7 +47,7 @@ test("المسؤول بيصدّر الزيارات المحددة Excel، وكل
   const { rows, rtl } = await sheetRows((await xlsx.path())!);
   expect(rtl).toBe(true);
   expect(rows).toHaveLength(2);
-  expect(rows[0].slice(0, 4)).toEqual(["م.", "التاريخ", "الحساب", "الكود"]);
+  expect(rows[0].slice(0, 4)).toEqual(["م", "التاريخ", "الحساب", "الكود"]);
   expect(String(rows[1][3])).toMatch(/^G-8181-00[12]$/);
 
   // بدون تحديد ← كل نتيجة الفلتر، PDF

@@ -52,7 +52,6 @@ export default async function PrintLine({ searchParams }: { searchParams: Promis
             <span>
               {fmtDay(v.visitedOn)} · {v.owner?.displayName ?? "غير محدد"}
             </span>
-            <span className="ltr">#{v.number}</span>
           </h2>
           <dl className="vb-grid">
             <div>

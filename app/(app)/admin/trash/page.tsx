@@ -15,12 +15,12 @@ export default async function TrashPage() {
       <div className="page-head">
         <div>
           <h1>سلة المحذوفات</h1>
-          <p className="muted">الزيارات المحذوفة ما بتنمسح. بتقدر ترجعها، وكل حذف واسترجاع بالسجل.</p>
+          <p className="muted">لا تُمسح الزيارات المحذوفة نهائياً، ويمكن استرجاعها، وتُسجَّل كل عملية حذف واسترجاع في السجل.</p>
         </div>
       </div>
       <div className="card">
         {rows.length === 0 ? (
-          <div className="empty">السلة فاضية.</div>
+          <div className="empty">سلة المحذوفات فارغة.</div>
         ) : (
           <div className="table-wrap">
             <table className="table stack">
@@ -29,7 +29,7 @@ export default async function TrashPage() {
                   <tr key={v.id}>
                     <td className="cell-main">
                       <a href={`/visits/${v.id}`} className="ltr">
-                        #{v.number}
+                        {v.lineCode ?? "حالة خاصة"}
                       </a>{" "}
                       {v.accountName}
                     </td>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { fmtDay } from "@/components/visit-ui";
 import { requirePermission } from "@/lib/session";
 import { pendingRequestsFor } from "@/lib/edit-requests";
 import { DecideButtons } from "@/components/VisitActions";
@@ -12,7 +13,7 @@ const FIELD: Record<string, string> = {
   accountName: "الحساب",
   specialCase: "حالة خاصة",
   place: "المكان",
-  companionIds: "المرافقين",
+  companionIds: "المرافقون",
   tests: "الفحوصات",
   result: "النتيجة",
 };
@@ -28,18 +29,18 @@ export default async function InboxPage() {
       <div className="page-head">
         <div>
           <h1>طلبات التعديل</h1>
-          <p className="muted">تعديلات اقترحها زملاءك على تقارير زياراتك. القديم يمين والجديد شمال.</p>
+          <p className="muted">تعديلات اقترحها زملاؤك على تقارير زياراتك. النسخة القديمة على اليمين والجديدة على اليسار.</p>
         </div>
       </div>
-      {requests.length === 0 && <div className="card empty">ما في طلبات بانتظارك.</div>}
+      {requests.length === 0 && <div className="card empty">لا توجد طلبات بانتظارك.</div>}
       <div className="grid">
         {requests.map((r) => (
-          <section key={r.id} className="card card-pad grid" aria-label={`طلب على زيارة ${r.visit.number}`}>
+          <section key={r.id} className="card card-pad grid" aria-label={`طلب على زيارة ${r.visit.lineCode ?? "حالة خاصة"}`}>
             <div className="page-head" style={{ margin: 0 }}>
               <div>
                 <h2>
                   <Link href={`/visits/${r.visit.id}`} className="ltr">
-                    #{r.visit.number}
+                    {r.visit.lineCode ?? "حالة خاصة"} · {fmtDay(r.visit.visitedOn)}
                   </Link>{" "}
                   {r.visit.accountName}
                 </h2>

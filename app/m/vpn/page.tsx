@@ -47,8 +47,8 @@ function VpnFields({ onSaved }: { onSaved: (t: string) => void }) {
 
   async function save() {
     setError("");
-    if (!name.trim()) return setError("اكتب اسم الشبكة");
-    if (!IPV4.test(ip.trim()) && !ip.includes(":")) return setError("الـ IP مش صحيح");
+    if (!name.trim()) return setError("أدخل اسم الشبكة");
+    if (!IPV4.test(ip.trim()) && !ip.includes(":")) return setError("عنوان IP غير صحيح");
     setBusy(true);
     const label = `VPN ${name.trim()}`;
     const item = await enqueue(
@@ -66,7 +66,7 @@ function VpnFields({ onSaved }: { onSaved: (t: string) => void }) {
     rememberRecent({ uuid: item.uuid, kind: "VPN", label, at: item.filledAt });
     const r = navigator.onLine ? await flushQueue().catch(() => null) : null;
     setBusy(false);
-    onSaved(r && r.sent > 0 ? "انبعتت حالة الـ VPN." : "انحفظت بالجوال، وبتنبعت لحالها لما يرجع النت.");
+    onSaved(r && r.sent > 0 ? "تم إرسال حالة VPN." : "تم الحفظ على الجهاز، وسيتم الإرسال تلقائياً عند عودة الاتصال.");
   }
 
   return (
@@ -96,7 +96,7 @@ function VpnFields({ onSaved }: { onSaved: (t: string) => void }) {
           />
         </div>
         <div className="field">
-          <label htmlFor="v-ip">الـ IP اللي طلع معك</label>
+          <label htmlFor="v-ip">عنوان IP الذي ظهر لديك</label>
           <input
             id="v-ip"
             className="input ltr"
@@ -109,7 +109,7 @@ function VpnFields({ onSaved }: { onSaved: (t: string) => void }) {
         </div>
         {previous.length > 0 && (
           <div className="alert alert-warn" role="status">
-            انسجلت قبل {previous.length} حالة بنفس الـ IP أو الاسم:
+            سبق تسجيل {previous.length} حالة بعنوان IP نفسه أو بالاسم نفسه:
             <ul style={{ margin: "4px 0 0", paddingInlineStart: 18 }}>
               {previous.map((p) => (
                 <li key={p.id}>
@@ -125,7 +125,7 @@ function VpnFields({ onSaved }: { onSaved: (t: string) => void }) {
           <input id="v-place" className="input" value={place} onChange={(e) => setPlace(e.target.value)} />
         </div>
         <div className="field">
-          <label htmlFor="v-sus">الحسابات المشتبه فيها</label>
+          <label htmlFor="v-sus">الحسابات المشتبه بها</label>
           <textarea
             id="v-sus"
             className="input"
@@ -141,7 +141,7 @@ function VpnFields({ onSaved }: { onSaved: (t: string) => void }) {
       </div>
       <div className="m-sticky-save">
         <button className="btn btn-green btn-block" type="submit" disabled={busy}>
-          {busy ? "عم نحفظ…" : "حفظ الحالة"}
+          {busy ? "جارٍ الحفظ…" : "حفظ الحالة"}
         </button>
       </div>
     </form>

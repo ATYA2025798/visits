@@ -67,7 +67,7 @@ export function CredentialBox({ lineCode, cred }: { lineCode: string; cred: { id
               )}
             </span>
           ) : (
-            <span className="small muted">ما في بيانات دخول محفوظة</span>
+            <span className="small muted">لا توجد بيانات دخول محفوظة</span>
           )}
           {cred && !shown && (
             <button className="btn btn-ghost btn-sm" onClick={() => setMode("reveal")}>
@@ -128,7 +128,7 @@ export function CredentialBox({ lineCode, cred }: { lineCode: string; cred: { id
             إلغاء
           </button>
           <span className="hint" style={{ width: "100%" }}>
-            العرض بينسجل باسمك ووقته.
+            يُسجَّل العرض باسمك مع وقته.
           </span>
         </form>
       )}

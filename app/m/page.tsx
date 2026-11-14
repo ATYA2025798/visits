@@ -15,7 +15,7 @@ export default function MobileHome() {
         </Link>
         <Link className="m-tile" href="/m/vpn">
           <b>حالة VPN</b>
-          <span>اسم الشبكة والـ IP والمكان</span>
+          <span>اسم الشبكة وعنوان IP والمكان</span>
         </Link>
         <Link className="m-tile" href="/m/card">
           <b>شراء بطاقة</b>
@@ -24,22 +24,22 @@ export default function MobileHome() {
         {online && (
           <>
             <Link className="m-tile m-tile-soft" href="/search">
-              <b>بحث بالـ Line Code</b>
-              <span>بده نت</span>
+              <b>البحث باستخدام Line Code</b>
+              <span>يتطلب اتصالاً بالإنترنت</span>
             </Link>
             <Link className="m-tile m-tile-soft" href="/revisits">
               <b>إعادة الزيارة</b>
-              <span>بده نت</span>
+              <span>يتطلب اتصالاً بالإنترنت</span>
             </Link>
             <Link className="m-tile m-tile-soft" href="/">
               <b>الموقع الكامل</b>
-              <span>بده نت</span>
+              <span>يتطلب اتصالاً بالإنترنت</span>
             </Link>
           </>
         )}
       </div>
       <p className="small muted">
-        كل شي بتعبّيه هون بينحفظ بالجوال أول، وبينبعت لحاله لما يكون في نت. وقت التعبئة والموقع بينحفظوا لحظة الحفظ.
+        تُحفَظ جميع البيانات المُدخلة هنا على الجهاز أولاً، وتُرسَل تلقائياً عند توفر الاتصال بالإنترنت. ويُسجَّل وقت التعبئة والموقع لحظة الحفظ.
       </p>
     </div>
   );

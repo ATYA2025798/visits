@@ -25,7 +25,7 @@ const base = {
 
 const visitPayload = createVisitSchema.omit({ visitedOn: true }).extend({
   gps: gpsSchema,
-  photos: z.array(z.string()).max(MAX_PHOTOS, `الحد ${MAX_PHOTOS} صور`).optional(),
+  photos: z.array(z.string()).max(MAX_PHOTOS, `الحد الأقصى ${MAX_PHOTOS} صور`).optional(),
   mikrotik: z
     .array(z.object({ questionId: z.uuid(), answer: z.string().max(100) }))
     .max(20)
@@ -44,9 +44,9 @@ export type SyncResult = { uuid: string; status: "created" | "duplicate"; entity
 function checkFilledAt(iso: string): Date {
   const d = new Date(iso);
   const now = Date.now();
-  if (d.getTime() > now + 10 * 60_000) throw new ApiError(400, "وقت التعبئة بالمستقبل. تأكد من ساعة الجوال");
+  if (d.getTime() > now + 10 * 60_000) throw new ApiError(400, "وقت التعبئة في المستقبل. يُرجى التحقق من ساعة الجهاز");
   if (d.getTime() < now - MAX_AGE_DAYS * 24 * 3600_000)
-    throw new ApiError(400, `وقت التعبئة أقدم من ${MAX_AGE_DAYS} يوم`);
+    throw new ApiError(400, `وقت التعبئة أقدم من ${MAX_AGE_DAYS} يوماً`);
   return d;
 }
 

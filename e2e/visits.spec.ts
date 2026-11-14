@@ -19,7 +19,7 @@ async function samiPage(browser: Browser) {
     await p.getByLabel("كلمة السر الجديدة", { exact: true }).fill(`${SAMI.password}-2`);
     await p.getByLabel("أعد كتابة كلمة السر الجديدة").fill(`${SAMI.password}-2`);
     await p.getByRole("button", { name: "حفظ" }).click();
-    await expect(p.getByText("تغيّرت كلمة السر")).toBeVisible();
+    await expect(p.getByText("تم تغيير كلمة السر")).toBeVisible();
   }
   return p;
 }
@@ -46,11 +46,11 @@ test.describe.serial("الزيارات من أولها لآخرها", () => {
     await page.getByLabel("Line Code", { exact: true }).fill("g 7000 001");
     await page.getByLabel("Line Code", { exact: true }).blur();
     await expect(page.getByLabel("اسم الحساب")).toHaveValue("مقهى الزيارات");
-    await page.getByLabel("الفحوصات اللي تمت").fill("فحص الراوتر والمايكروتيك");
+    await page.getByLabel("الفحوصات المُنجزة").fill("فحص الراوتر والمايكروتيك");
     await page.getByLabel("نتيجة الفحوصات").fill("إعادة بيع للجيران");
     await page.getByLabel("التوصية").selectOption({ label: "يوجد تجاوز" });
     await page.getByRole("button", { name: "حفظ الزيارة" }).click();
-    await expect(page.getByRole("heading", { name: /زيارة #\d+/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^زيارة/ })).toBeVisible();
     await expect(page.getByLabel("التقرير")).toContainText("إعادة بيع للجيران");
     await expect(page.getByLabel("السجل")).toContainText("سجّل الزيارة");
 
@@ -68,21 +68,21 @@ test.describe.serial("الزيارات من أولها لآخرها", () => {
     // الحالة: أي سفير
     await sami.getByLabel("الإجراء المطبق").selectOption({ label: "تم تجميد الخدمة" });
     await sami.getByRole("button", { name: "حفظ الحالة" }).click();
-    await expect(sami.getByText("انحفظت الحالة")).toBeVisible();
+    await expect(sami.getByText("تم حفظ الحالة")).toBeVisible();
     // التقرير: طلب تعديل
     await expect(sami.getByRole("link", { name: "تعديل التقرير" })).toHaveCount(0);
     await sami.getByRole("link", { name: "طلب تعديل" }).click();
-    await sami.getByLabel("الفحوصات اللي تمت").fill("فحص الراوتر والمايكروتيك وصندوق التوزيع");
+    await sami.getByLabel("الفحوصات المُنجزة").fill("فحص الراوتر والمايكروتيك وصندوق التوزيع");
     await sami.getByLabel("سبب التعديل").fill("نسينا صندوق التوزيع");
     await sami.getByRole("button", { name: "إرسال طلب التعديل" }).click();
-    await expect(sami.getByText("انبعت طلب التعديل")).toBeVisible();
+    await expect(sami.getByText("تم إرسال طلب التعديل")).toBeVisible();
 
     await loginAsAli(page);
     await expect(page.locator(".sidebar").getByRole("link", { name: /طلبات التعديل/ })).toContainText("1");
     await page.goto("/inbox");
     await expect(page.getByText("نسينا صندوق التوزيع")).toBeVisible();
     await page.getByRole("button", { name: "موافقة" }).click();
-    await expect(page.getByText("ما في طلبات بانتظارك")).toBeVisible();
+    await expect(page.getByText("لا توجد طلبات بانتظارك")).toBeVisible();
     await page.goto("/visits/mine");
     await page.locator("tr", { hasText: "مقهى الزيارات" }).first().getByRole("link").first().click();
     await expect(page.getByLabel("التقرير")).toContainText("صندوق التوزيع");
@@ -96,7 +96,7 @@ test.describe.serial("الزيارات من أولها لآخرها", () => {
     await page.getByLabel("التوصية").selectOption({ label: "زيارة غير ناجحة" });
     await page.getByLabel("موعد مقترح لإعادة الزيارة (اختياري)").fill("2099-01-01");
     await page.getByRole("button", { name: "حفظ الزيارة" }).click();
-    await expect(page.getByRole("heading", { name: /زيارة #\d+/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^زيارة/ })).toBeVisible();
 
     await page.goto("/revisits");
     const row = page.locator('tr[data-revisit="G-7000-002"]');
@@ -109,7 +109,7 @@ test.describe.serial("الزيارات من أولها لآخرها", () => {
     await expect(row).toContainText("المحل مسكر");
 
     await row.getByRole("link", { name: "سجّل الزيارة" }).click();
-    await expect(page.getByText(/إعادة زيارة للزيارة رقم/)).toBeVisible();
+    await expect(page.getByText(/إعادة زيارة للخط/)).toBeVisible();
     await expect(page.getByLabel("Line Code", { exact: true })).toHaveValue("G-7000-002");
     await page.getByLabel("التوصية").selectOption({ label: "لا يوجد تجاوز" });
     await page.getByRole("button", { name: "حفظ الزيارة" }).click();
@@ -146,12 +146,12 @@ test.describe.serial("الزيارات من أولها لآخرها", () => {
     await page.locator("tbody tr").first().getByRole("link").first().click();
     page.once("dialog", (d) => d.accept());
     await page.getByRole("button", { name: "حذف" }).click();
-    await expect(page.getByText("انحذفت الزيارة")).toBeVisible();
+    await expect(page.getByText("تم حذف الزيارة")).toBeVisible();
     await page.goto("/visits?q=G-7000-002");
     await expect(page.locator("tbody tr")).toHaveCount(before - 1);
     await page.goto("/admin/trash");
     await page.getByRole("button", { name: "استرجاع" }).first().click();
-    await expect(page.getByText("السلة فاضية")).toBeVisible();
+    await expect(page.getByText("سلة المحذوفات فارغة")).toBeVisible();
   });
 
   test("المسؤول بيشوف كل شي للقراءة، وأي تعديل مباشر = 403", async ({ page, baseURL }) => {

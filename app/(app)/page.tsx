@@ -1,3 +1,4 @@
+import { fmtLongDate } from "@/lib/format";
 import Link from "next/link";
 import { requireUser } from "@/lib/session";
 import { can } from "@/lib/authz";
@@ -7,13 +8,6 @@ import { MonthlyChart } from "@/components/charts/MonthlyChart";
 import { BarList } from "@/components/charts/BarList";
 
 const nf = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
-const dayFmt = new Intl.DateTimeFormat("ar-PS-u-nu-latn", {
-  weekday: "long",
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-  timeZone: "Asia/Hebron",
-});
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<{ denied?: string }> }) {
   const user = await requireUser();
@@ -25,7 +19,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     <div className="page-head">
       <div>
         <h1>أهلاً {user.displayName}</h1>
-        <p className="muted">{dayFmt.format(new Date())}</p>
+        <p className="muted">{fmtLongDate(new Date())}</p>
       </div>
       {can(user, "visits:create") && (
         <div className="actions">
@@ -33,7 +27,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             زيارة جديدة
           </Link>
           <Link className="btn btn-ghost" href="/search">
-            بحث بالـ Line Code
+            البحث باستخدام Line Code
           </Link>
         </div>
       )}
@@ -50,7 +44,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       {header}
       {denied && (
         <div className="alert alert-warn" role="alert" style={{ marginBottom: 16 }}>
-          ما عندك صلاحية لهالصفحة.
+          ليست لديك صلاحية للوصول إلى هذه الصفحة.
         </div>
       )}
 
@@ -59,11 +53,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           <div className="label">زيارات اليوم</div>
           <div className="value">{s.visits.today}</div>
           <div className="sub">
-            هالأسبوع {s.visits.week} · هالشهر {s.visits.month}
+            هذا الأسبوع {s.visits.week} · هذا الشهر {s.visits.month}
           </div>
         </Link>
         <div className="card stat">
-          <div className="label">نسبة التجاوزات هالشهر</div>
+          <div className="label">نسبة التجاوزات هذا الشهر</div>
           <div className="value">
             {nf.format(s.violations.monthRate)}
             <span className="unit">%</span>
@@ -75,10 +69,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         <Link className="card stat" href="/revisits">
           <div className="label">بانتظار إعادة زيارة</div>
           <div className="value">{s.openRevisits}</div>
-          <div className="sub">{a.postponedTwice.length} متأجلة أكتر من مرة</div>
+          <div className="sub">{a.postponedTwice.length} مؤجلة أكثر من مرة</div>
         </Link>
         <Link className="card stat" href={`/cards?month=${month}`}>
-          <div className="label">مصروف البطاقات هالشهر</div>
+          <div className="label">مصروف البطاقات هذا الشهر</div>
           <div className="value">
             {nf.format(s.cards.monthTotal)}
             <span className="unit">₪</span>
@@ -91,7 +85,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         <section className="card" aria-label="الزيارات شهرياً" style={{ gridColumn: "1 / -1" }}>
           <div className="card-head">
             <h2>الزيارات شهرياً حسب التوصية</h2>
-            <span className="muted small">{s.visits.total} زيارة بالمجموع</span>
+            <span className="muted small">{s.visits.total} زيارة في المجموع</span>
           </div>
           <div className="card-pad">
             <MonthlyChart months={s.monthly} />
@@ -117,7 +111,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               <thead>
                 <tr>
                   <th>السفير</th>
-                  <th>هالشهر</th>
+                  <th>هذا الشهر</th>
                   <th>الكل</th>
                 </tr>
               </thead>
@@ -146,35 +140,35 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 تجاوزات بدون إجراء <span className="badge badge-red">{a.violationsNoAction.length}</span>
               </h3>
               {a.violationsNoAction.length === 0 ? (
-                <p className="small muted">ولا وحدة.</p>
+                <p className="small muted">لا يوجد.</p>
               ) : (
                 <ul className="alert-list">
                   {a.violationsNoAction.slice(0, 8).map((v) => (
                     <li key={v.id}>
                       <Link href={`/visits/${v.id}`}>
-                        <span className="ltr">{v.lineCode ?? `#${v.number}`}</span>
+                        <span className="ltr">{v.lineCode ?? "حالة خاصة"}</span>
                       </Link>{" "}
                       <span className="muted small">{v.accountName}</span>
                     </li>
                   ))}
                   {a.violationsNoAction.length > 8 && (
-                    <li className="small muted">و{a.violationsNoAction.length - 8} كمان</li>
+                    <li className="small muted">و{a.violationsNoAction.length - 8} أخرى</li>
                   )}
                 </ul>
               )}
             </div>
             <div>
               <h3 className="alert-title">
-                إعادات زيارة متأجلة أكتر من مرة <span className="badge badge-warn">{a.postponedTwice.length}</span>
+                إعادات زيارة مؤجلة أكثر من مرة <span className="badge badge-warn">{a.postponedTwice.length}</span>
               </h3>
               {a.postponedTwice.length === 0 ? (
-                <p className="small muted">ولا وحدة.</p>
+                <p className="small muted">لا يوجد.</p>
               ) : (
                 <ul className="alert-list">
                   {a.postponedTwice.slice(0, 8).map((v) => (
                     <li key={v.id}>
                       <Link href={`/visits/${v.id}`}>
-                        <span className="ltr">{v.lineCode ?? `#${v.number}`}</span>
+                        <span className="ltr">{v.lineCode ?? "حالة خاصة"}</span>
                       </Link>{" "}
                       <span className="muted small">تأجلت {v.postponeCount} مرات</span>
                     </li>
@@ -184,10 +178,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             </div>
             <div>
               <h3 className="alert-title">
-                خطوط بحاجة access <span className="badge badge-blue">{a.needAccess}</span>
+                خطوط بحاجة إلى صلاحية access <span className="badge badge-blue">{a.needAccess}</span>
               </h3>
               <p className="small">
-                <Link href="/mikrotik/access">افتح القائمة</Link>
+                <Link href="/mikrotik/access">فتح القائمة</Link>
               </p>
             </div>
             {isAmb && (
@@ -196,7 +190,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                   طلبات تعديل بانتظارك <span className="badge badge-blue">{a.pendingRequests}</span>
                 </h3>
                 <p className="small">
-                  <Link href="/inbox">افتح الطلبات</Link>
+                  <Link href="/inbox">فتح الطلبات</Link>
                 </p>
               </div>
             )}

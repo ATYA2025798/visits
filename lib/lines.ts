@@ -15,8 +15,8 @@ const optionalText = z
   .transform((v) => (v ? v : undefined));
 
 export const manualLineSchema = z.object({
-  code: z.string().trim().min(1, "اكتب الـ Line Code").max(40).refine(isValidLineCode, "الـ Line Code مش صالح"),
-  accountName: z.string().trim().min(2, "اكتب اسم الحساب").max(200),
+  code: z.string().trim().min(1, "أدخل Line Code").max(40).refine(isValidLineCode, "قيمة Line Code غير صالحة"),
+  accountName: z.string().trim().min(2, "أدخل اسم الحساب").max(200),
   speed: optionalText,
   locality: optionalText,
   fixedIp: optionalText,
@@ -39,7 +39,7 @@ export async function addManualLine(actorId: string, raw: z.input<typeof manualL
       if (existing) {
         throw new ApiError(
           409,
-          `الخط ${existing.code} موجود من قبل${existing.accountName ? ` (${existing.accountName})` : ""}`,
+          `الخط ${existing.code} موجود مسبقاً${existing.accountName ? ` (${existing.accountName})` : ""}`,
         );
       }
       const line = await tx.line.create({

@@ -190,7 +190,7 @@ export async function analyzeMonthlyFile(
   opts: { month: string; columnMap?: ColumnMap },
   db: Db = defaultPrisma,
 ): Promise<MonthlyPlan> {
-  if (!MONTH_RE.test(opts.month)) throw new ApiError(400, "الشهر لازم يكون بصيغة 2026-11");
+  if (!MONTH_RE.test(opts.month)) throw new ApiError(400, "يجب أن يكون الشهر بصيغة 2026-11");
   const sheets = await readWorkbook(buffer);
   const fileSha256 = createHash("sha256").update(buffer).digest("hex");
   const columnMap = opts.columnMap ?? {};
@@ -237,7 +237,7 @@ export async function analyzeMonthlyFile(
         problems.push({
           sheet: sheet.name,
           row: rowNumber,
-          reason: `بدون Line Code صالح (${text(rawCode) ?? "فاضي"})`,
+          reason: `دون Line Code صالح (${text(rawCode) ?? "فارغ"})`,
         });
         continue;
       }
@@ -268,7 +268,7 @@ export async function analyzeMonthlyFile(
       if (info.role === "LOG") {
         const visitDate = c.visitDate ? parseDayFirstDate(cells[c.visitDate]) : null;
         if (c.visitDate && cells[c.visitDate] !== null && !visitDate) {
-          problems.push({ sheet: sheet.name, row: rowNumber, reason: `تاريخ مش مفهوم: ${text(cells[c.visitDate])}` });
+          problems.push({ sheet: sheet.name, row: rowNumber, reason: `تاريخ غير مفهوم: ${text(cells[c.visitDate])}` });
         }
         const base = `${codeKey}|${visitDate ? visitDate.toISOString().slice(0, 10) : "بدون-تاريخ"}`;
         const n = (logOccurrences.get(base) ?? 0) + 1;
@@ -286,7 +286,7 @@ export async function analyzeMonthlyFile(
       }
 
       if (seenInSheet.has(codeKey)) {
-        problems.push({ sheet: sheet.name, row: rowNumber, reason: `خط مكرر بنفس الورقة: ${incoming.code}` });
+        problems.push({ sheet: sheet.name, row: rowNumber, reason: `خط مكرر في الورقة نفسها: ${incoming.code}` });
         continue;
       }
       seenInSheet.add(codeKey);
@@ -308,7 +308,7 @@ export async function analyzeMonthlyFile(
 
   const blocking: string[] = [];
   if (!infos.some((i) => i.role !== "IGNORED")) {
-    blocking.push(`ما لقينا عمود ${FIELDS.code.label} بأي ورقة. حدد العمود من خريطة الأعمدة.`);
+    blocking.push(`لم يُعثر على عمود ${FIELDS.code.label} في أي ورقة. يُرجى تحديد العمود من خريطة الأعمدة.`);
   }
 
   // مقارنة مع قاعدة البيانات
@@ -466,7 +466,7 @@ export async function applyMonthlyImport(
         "IMPORT",
         "Import",
         imp.id,
-        `ملف شهر ${plan.month} (${opts.fileName}): ${s.newLines} خط جديد، ${s.changedLines} تغيّرت بياناته، ${s.missingFromFile} مش موجود بالملف، ${s.targets} زيارة للشهر، ${s.logRows} سطر بسجل الإدارة، ${s.problems} صف فيه مشكلة`,
+        `ملف شهر ${plan.month} (${opts.fileName}): ${s.newLines} خط جديد، ${s.changedLines} تغيّرت بياناته، ${s.missingFromFile} غير موجود في الملف، ${s.targets} زيارة للشهر، ${s.logRows} سطر في سجل الإدارة، ${s.problems} صف به مشكلة`,
       );
       return imp.id;
     },

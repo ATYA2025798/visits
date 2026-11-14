@@ -1,5 +1,6 @@
 "use client";
 
+import { fmtDateTime } from "@/lib/format";
 import { useState } from "react";
 import { recentItems } from "@/components/m/MobileShell";
 import { GpsBox, PhotoPicker, SavedNotice, Seg } from "@/components/m/FieldBits";
@@ -45,9 +46,9 @@ function CardFields({ onSaved }: { onSaved: (t: string) => void }) {
   async function save() {
     setError("");
     const p = Number(price.replace(",", "."));
-    if (!name.trim()) return setError("اكتب اسم البطاقة أو الشبكة");
-    if (!(p > 0)) return setError("السعر لازم يكون أكبر من صفر");
-    if ((link === "VISIT" || link === "VPN") && !ref) return setError("اختار الزيارة أو الحالة المرتبطة");
+    if (!name.trim()) return setError("أدخل اسم البطاقة أو الشبكة");
+    if (!(p > 0)) return setError("يجب أن يكون السعر أكبر من صفر");
+    if ((link === "VISIT" || link === "VPN") && !ref) return setError("اختر الزيارة أو الحالة المرتبطة");
     setBusy(true);
     await enqueue(
       "CARD",
@@ -64,7 +65,7 @@ function CardFields({ onSaved }: { onSaved: (t: string) => void }) {
     );
     const r = navigator.onLine ? await flushQueue().catch(() => null) : null;
     setBusy(false);
-    onSaved(r && r.sent > 0 ? "انبعتت البطاقة." : "انحفظت بالجوال، وبتنبعت لحالها لما يرجع النت.");
+    onSaved(r && r.sent > 0 ? "تم إرسال البطاقة." : "تم الحفظ على الجهاز، وسيتم الإرسال تلقائياً عند عودة الاتصال.");
   }
 
   return (
@@ -98,7 +99,7 @@ function CardFields({ onSaved }: { onSaved: (t: string) => void }) {
           />
         </div>
         <div className="field">
-          <label htmlFor="c-ip">الـ IP اللي انأخذ من الشبكة (اختياري)</label>
+          <label htmlFor="c-ip">عنوان IP المأخوذ من الشبكة (اختياري)</label>
           <input id="c-ip" className="input ltr" value={ip} onChange={(e) => setIp(e.target.value)} />
         </div>
         <div className="field">
@@ -117,17 +118,17 @@ function CardFields({ onSaved }: { onSaved: (t: string) => void }) {
         </div>
         {(link === "VISIT" || link === "VPN") && (
           <div className="field">
-            <label htmlFor="c-ref">{link === "VISIT" ? "الزيارة" : "الحالة"} (من اللي سجلتها هالأيام)</label>
+            <label htmlFor="c-ref">{link === "VISIT" ? "الزيارة" : "الحالة"} (مما سجّلته خلال الأيام الأخيرة)</label>
             <select id="c-ref" className="select" value={ref} onChange={(e) => setRef(e.target.value)}>
-              <option value="">— اختار —</option>
+              <option value="">— اختر —</option>
               {recent.map((r) => (
                 <option key={r.uuid} value={r.uuid}>
                   {r.label} ·{" "}
-                  {new Date(r.at).toLocaleString("ar-PS-u-nu-latn", { dateStyle: "short", timeStyle: "short" })}
+                  {fmtDateTime(new Date(r.at))}
                 </option>
               ))}
             </select>
-            {recent.length === 0 && <span className="hint">ما في شي مسجل على هالجوال آخر 3 أيام.</span>}
+            {recent.length === 0 && <span className="hint">لا توجد سجلات على هذا الجهاز خلال آخر 3 أيام.</span>}
           </div>
         )}
         <GpsBox value={gps} onChange={setGps} />
@@ -135,7 +136,7 @@ function CardFields({ onSaved }: { onSaved: (t: string) => void }) {
       </div>
       <div className="m-sticky-save">
         <button className="btn btn-green btn-block" type="submit" disabled={busy}>
-          {busy ? "عم نحفظ…" : "حفظ البطاقة"}
+          {busy ? "جارٍ الحفظ…" : "حفظ البطاقة"}
         </button>
       </div>
     </form>

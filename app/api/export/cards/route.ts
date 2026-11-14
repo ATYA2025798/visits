@@ -7,7 +7,7 @@ export const GET = handler(async (req) => {
   await apiRequire(req, "export");
   const sp = req.nextUrl.searchParams;
   const month = sp.get("month") ?? "";
-  if (!/^\d{4}-\d{2}$/.test(month)) throw new ApiError(400, "اختار الشهر");
+  if (!/^\d{4}-\d{2}$/.test(month)) throw new ApiError(400, "اختر الشهر");
   const owner = sp.get("owner");
   const ownerId = owner && /^[0-9a-f-]{36}$/i.test(owner) ? owner : undefined;
   if (sp.get("format") === "pdf") {

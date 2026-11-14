@@ -10,7 +10,7 @@ import { CredentialBox } from "@/components/CredentialBox";
 import { lastMikrotikAnswers } from "@/lib/mikrotik";
 import { credentialFor } from "@/lib/mikrotik-credentials";
 
-export const metadata: Metadata = { title: "البحث بالـ Line Code" };
+export const metadata: Metadata = { title: "البحث باستخدام Line Code" };
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ code?: string }> }) {
   const me = await requirePermission("visits:view");
@@ -30,8 +30,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     <>
       <div className="page-head">
         <div>
-          <h1>البحث بالـ Line Code</h1>
-          <p className="muted">اكتب الكود بأي شكل: بشرطات أو بدونها، أحرف صغيرة أو كبيرة.</p>
+          <h1>البحث باستخدام Line Code</h1>
+          <p className="muted">أدخل الكود بأي صيغة: مع الشرطات أو بدونها، وبأحرف صغيرة أو كبيرة.</p>
         </div>
         <Link className="btn btn-ghost" href="/search/bulk">
           بحث جماعي
@@ -56,10 +56,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         </button>
       </form>
 
-      {code && !isValidLineCode(code) && <div className="alert alert-warn">الكود مش صالح.</div>}
+      {code && !isValidLineCode(code) && <div className="alert alert-warn">الكود غير صالح.</div>}
       {r && !r.line && r.visits.length === 0 && (
         <div className="alert alert-warn">
-          الخط <b className="ltr">{code}</b> مش موجود بالمشتركين وما إله زيارات.
+          الخط <b className="ltr">{code}</b> غير موجود في ملف المشتركين وليس له زيارات.
           {can(me, "visits:create") && (
             <>
               {" "}
@@ -81,14 +81,14 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               </div>
               <div className="actions">
                 {r.line?.manual && <span className="badge badge-blue">مضاف يدوياً</span>}
-                {r.line && !r.line.inLatestFile && <span className="badge badge-gray">مش موجود بآخر ملف</span>}
-                {!r.line && <span className="badge badge-warn">مش بملف المشتركين</span>}
+                {r.line && !r.line.inLatestFile && <span className="badge badge-gray">غير موجود في آخر ملف</span>}
+                {!r.line && <span className="badge badge-warn">غير موجود في ملف المشتركين</span>}
                 {can(me, "visits:create") && (
                   <Link
                     className="btn btn-primary btn-sm"
                     href={`/visits/new?code=${encodeURIComponent(r.line?.code ?? code)}`}
                   >
-                    زيارة جديدة لهالخط
+                    زيارة جديدة لهذا الخط
                   </Link>
                 )}
               </div>
@@ -168,7 +168,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
                     <MikrotikAnswers answers={mikrotik.answers} />
                   </>
                 ) : (
-                  <div className="small muted">ما في إجابات مايكروتيك لهالخط لسا.</div>
+                  <div className="small muted">لا توجد إجابات مايكروتيك لهذا الخط حتى الآن.</div>
                 )}
                 {can(me, "mikrotik:reveal") && (
                   <CredentialBox
@@ -194,7 +194,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
                 </span>
               )}
             </div>
-            <VisitTable rows={r.visits} showRegion={false} empty="ما في زيارات لهالخط." />
+            <VisitTable rows={r.visits} showRegion={false} empty="لا توجد زيارات لهذا الخط." />
           </section>
 
           {r.managerLog.length > 0 && (

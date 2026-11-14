@@ -44,7 +44,7 @@ export async function parseBody<T>(req: NextRequest, schema: ZodType<T>): Promis
   try {
     raw = await req.json();
   } catch {
-    throw new ApiError(400, "الطلب مش مفهوم");
+    throw new ApiError(400, "تعذّرت معالجة الطلب");
   }
   return schema.parse(raw);
 }
@@ -82,7 +82,7 @@ export function handler<C = unknown>(fn: Handler<C>): Handler<C> {
         );
       }
       console.error(err);
-      return NextResponse.json({ error: "صار خطأ بالسيرفر" }, { status: 500 });
+      return NextResponse.json({ error: "حدث خطأ في الخادم" }, { status: 500 });
     }
   };
 }

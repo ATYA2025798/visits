@@ -7,6 +7,7 @@ import { prisma as defaultPrisma, type Db } from "../db";
 import { visitWhere, type VisitFilters } from "../visit-list";
 import { cardMonthly } from "../cards";
 import { TIME_ZONE } from "../dates";
+import { fmtDate } from "../format";
 
 export const MAX_EXPORT = 5000;
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -45,9 +46,9 @@ export async function exportVisits(sel: { ids?: string[]; filters?: VisitFilters
 
 const dayCell = (d: Date | null) => (d ? new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())) : null);
 
-export const VISIT_COLUMNS: Array<{ header: string; width: number; value: (v: ExportVisit) => unknown }> = [
+export const VISIT_COLUMNS: Array<{ header: string; width: number; value: (v: ExportVisit, i: number) => unknown }> = [
   // نفس ترتيب ملف الإكسل الحالي
-  { header: "م.", width: 7, value: (v) => v.number },
+  { header: "م", width: 6, value: (_v, i) => i + 1 },
   { header: "التاريخ", width: 12, value: (v) => dayCell(v.visitedOn) },
   { header: "الحساب", width: 30, value: (v) => v.accountName ?? v.line?.accountName ?? "" },
   { header: "الكود", width: 14, value: (v) => (v.specialCase ? "حالة خاصة" : (v.line?.code ?? v.lineCode ?? "")) },
@@ -58,7 +59,7 @@ export const VISIT_COLUMNS: Array<{ header: string; width: number; value: (v: Ex
   { header: "إعادة الزيارة", width: 20, value: (v) => v.revisitNote ?? dayCell(v.revisitDue) ?? "" },
   // الأعمدة الجديدة
   { header: "السفير", width: 16, value: (v) => v.owner?.displayName ?? "غير محدد" },
-  { header: "المرافقين", width: 18, value: (v) => v.companions },
+  { header: "المرافقون", width: 18, value: (v) => v.companions },
   { header: "المنطقة", width: 10, value: (v) => v.line?.region ?? "" },
   { header: "المكان", width: 20, value: (v) => v.place ?? "" },
   { header: "الموقع", width: 22, value: (v) => (v.lat !== null && v.lng !== null ? `${v.lat.toFixed(5)}, ${v.lng.toFixed(5)}` : "") },
@@ -80,9 +81,9 @@ export async function visitsWorkbook(rows: ExportVisit[]): Promise<Buffer> {
   wb.creator = "نظام زيارات السفراء";
   const ws = wb.addWorksheet("الزيارات");
   ws.columns = VISIT_COLUMNS.map((c) => ({ header: c.header, width: c.width }));
-  for (const v of rows) ws.addRow(VISIT_COLUMNS.map((c) => c.value(v)));
-  ws.getColumn(2).numFmt = "yyyy-mm-dd";
-  ws.getColumn(9).numFmt = "yyyy-mm-dd";
+  rows.forEach((v, i) => ws.addRow(VISIT_COLUMNS.map((c) => c.value(v, i))));
+  ws.getColumn(2).numFmt = "d-m-yyyy";
+  ws.getColumn(9).numFmt = "d-m-yyyy";
   for (const k of [5, 6]) ws.getColumn(k).alignment = { wrapText: true, vertical: "top" };
   styleSheet(ws);
   return Buffer.from(await wb.xlsx.writeBuffer());
@@ -90,7 +91,6 @@ export async function visitsWorkbook(rows: ExportVisit[]): Promise<Buffer> {
 
 const LINK_LABEL: Record<string, string> = { VISIT: "زيارة", EXTERNAL: "فحص خارجي", VPN: "حالة VPN", NONE: "" };
 const timeFmt = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, hour: "2-digit", minute: "2-digit" });
-const dayFmt = new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE });
 
 /** تقرير آخر الشهر للصرف: كل بطاقة بتفاصيلها، وبالآخر المجموع لكل سفير والمجموع الكلي */
 export async function cardsWorkbook(opts: { month: string; ownerId?: string }, db: Db = defaultPrisma): Promise<Buffer> {
@@ -108,7 +108,7 @@ export async function cardsWorkbook(opts: { month: string; ownerId?: string }, d
   ];
   for (const c of r.rows) {
     ws.addRow([
-      dayFmt.format(c.filledAt),
+      fmtDate(c.filledAt, { zoned: true }),
       timeFmt.format(c.filledAt),
       c.name,
       c.ip ?? "",

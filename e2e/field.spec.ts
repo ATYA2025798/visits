@@ -15,14 +15,14 @@ test.describe("تطبيق الميدان", () => {
 
     // بدون نت
     await context.setOffline(true);
-    await expect(page.getByTestId("net")).toHaveText("بدون نت");
+    await expect(page.getByTestId("net")).toHaveText("دون اتصال");
     await page.getByRole("textbox", { name: "Line Code" }).fill("G-5555-001");
-    await page.getByLabel("الفحوصات اللي تمت").fill("فحص الشبكة بدون نت");
+    await page.getByLabel("الفحوصات المُنجزة").fill("فحص الشبكة بدون نت");
     await page.getByRole("group", { name: "التوصية" }).getByRole("button", { name: "لا يوجد تجاوز" }).click();
     const mk = page.getByRole("group", { name: "هل عند الشركة access على المايكروتيك؟" });
     await mk.getByRole("button", { name: "لا" }).click();
     await page.getByRole("button", { name: "حفظ الزيارة" }).click();
-    await expect(page.getByText("انحفظت الزيارة بالجوال")).toBeVisible();
+    await expect(page.getByText("تم حفظ الزيارة على الجهاز")).toBeVisible();
     await expect(page.getByTestId("pending-count")).toHaveText("1");
     const filledBefore = new Date();
 
@@ -39,7 +39,7 @@ test.describe("تطبيق الميدان", () => {
     await expect(page).toHaveURL(/\/visits\/[0-9a-f-]{36}$/);
     const report = page.getByRole("region", { name: "التقرير" });
     await expect(report).toContainText("31.41810, 34.35070");
-    await expect(report).toContainText("وقت التعبئة بالميدان");
+    await expect(report).toContainText("وقت التعبئة في الميدان");
     expect(filledBefore.getTime()).toBeGreaterThan(0);
 
     // بقائمة «بحاجة access»

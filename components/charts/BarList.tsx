@@ -12,7 +12,7 @@ export function BarList({
 }) {
   const max = Math.max(1, ...rows.map((r) => r.count));
   const total = rows.reduce((s, r) => s + r.count, 0);
-  if (rows.length === 0) return <div className="empty">ما في بيانات لسا.</div>;
+  if (rows.length === 0) return <div className="empty">لا توجد بيانات حتى الآن.</div>;
   return (
     <ul className="barlist">
       {rows.map((r) => (

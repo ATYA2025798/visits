@@ -10,7 +10,7 @@ import { TIME_ZONE } from "./dates";
 
 export const cardSchema = z
   .object({
-    name: z.string().trim().min(1, "اكتب اسم البطاقة أو الشبكة").max(200),
+    name: z.string().trim().min(1, "أدخل اسم البطاقة أو الشبكة").max(200),
     ip: z
       .string()
       .trim()
@@ -18,15 +18,15 @@ export const cardSchema = z
       .nullish()
       .transform((v) => v || null),
     price: z.coerce
-      .number({ error: "السعر لازم يكون رقم" })
-      .gt(0, "السعر لازم يكون أكبر من صفر")
-      .max(10_000, "السعر كبير كتير"),
+      .number({ error: "يجب أن يكون السعر رقماً" })
+      .gt(0, "يجب أن يكون السعر أكبر من صفر")
+      .max(10_000, "السعر كبير جداً"),
     linkKind: z.enum(["VISIT", "EXTERNAL", "VPN", "NONE"]).default("NONE"),
     linkRef: z.uuid().nullish(),
     gps: gpsSchema,
   })
   .refine((v) => (v.linkKind === "VISIT" || v.linkKind === "VPN" ? !!v.linkRef : true), {
-    message: "اختار الزيارة أو حالة الـ VPN المرتبطة",
+    message: "اختر الزيارة أو حالة VPN المرتبطة",
     path: ["linkRef"],
   });
 
@@ -82,7 +82,7 @@ export async function createCard(
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 function monthCheck(month: string) {
-  if (!MONTH.test(month)) throw new ApiError(400, "الشهر لازم يكون بصيغة 2026-11");
+  if (!MONTH.test(month)) throw new ApiError(400, "يجب أن يكون الشهر بصيغة 2026-11");
 }
 
 /** ملخص يومي (حسب يوم فلسطين)، الأحدث أول */

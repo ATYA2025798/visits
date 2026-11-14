@@ -60,7 +60,7 @@ export function LoginForm() {
         />
       </div>
       <button className="btn btn-primary btn-block" type="submit" disabled={busy}>
-        {busy ? "لحظة…" : "دخول"}
+        {busy ? "يُرجى الانتظار…" : "دخول"}
       </button>
     </form>
   );

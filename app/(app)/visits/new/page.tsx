@@ -3,6 +3,7 @@ import { requirePermission } from "@/lib/session";
 import { formOptions } from "@/lib/form-options";
 import { todayLocal } from "@/lib/dates";
 import { prisma } from "@/lib/db";
+import { fmtDay } from "@/components/visit-ui";
 import { VisitForm } from "@/components/VisitForm";
 
 export const metadata: Metadata = { title: "زيارة جديدة" };
@@ -27,7 +28,7 @@ export default async function NewVisitPage({
           <h1>زيارة جديدة</h1>
           {original && (
             <p className="muted">
-              إعادة زيارة للزيارة رقم <b className="ltr">#{original.number}</b>
+              إعادة زيارة للخط <b className="ltr">{original.lineCode}</b> — الزيارة السابقة بتاريخ <b className="ltr">{fmtDay(original.visitedOn)}</b>
             </p>
           )}
         </div>

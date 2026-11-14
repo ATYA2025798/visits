@@ -15,16 +15,16 @@ export const usernameSchema = z
     z
       .string()
       .min(3, "اسم الدخول 3 أحرف على الأقل")
-      .max(32, "اسم الدخول طويل")
-      .regex(/^[a-z0-9._-]+$/, "اسم الدخول بالإنجليزي: أحرف صغيرة وأرقام و . _ - بس"),
+      .max(32, "اسم الدخول طويل جداً")
+      .regex(/^[a-z0-9._-]+$/, "يجب أن يتكون اسم الدخول من أحرف إنجليزية صغيرة وأرقام والرموز . _ - فقط"),
   );
 
-const displayNameSchema = z.string().trim().min(2, "اكتب الاسم").max(80, "الاسم طويل");
+const displayNameSchema = z.string().trim().min(2, "أدخل الاسم").max(80, "الاسم طويل جداً");
 const roleSchema = z.enum(["AMBASSADOR", "MANAGER"]);
 const passwordSchema = z
   .string()
-  .min(MIN_PASSWORD_LENGTH, `كلمة السر لازم تكون ${MIN_PASSWORD_LENGTH} أحرف على الأقل`)
-  .max(200, "كلمة السر طويلة كتير");
+  .min(MIN_PASSWORD_LENGTH, `يجب ألا تقل كلمة السر عن ${MIN_PASSWORD_LENGTH} أحرف`)
+  .max(200, "كلمة السر طويلة جداً");
 
 export const createUserSchema = z.object({
   username: usernameSchema,
@@ -40,10 +40,10 @@ export const updateUserSchema = z
     role: roleSchema.optional(),
     active: z.boolean().optional(),
   })
-  .refine((v) => Object.keys(v).length > 0, "ما في شي يتعدّل");
+  .refine((v) => Object.keys(v).length > 0, "لا توجد بيانات لتعديلها");
 
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, "اكتب كلمة السر الحالية"),
+  currentPassword: z.string().min(1, "أدخل كلمة السر الحالية"),
   newPassword: passwordSchema,
 });
 
@@ -69,7 +69,7 @@ async function assertAmbassadorRemains(tx: Tx, changingUserId: string, next: { r
     target.role === "AMBASSADOR" && target.active && (next.role === "MANAGER" || next.active === false);
   if (!losesAmbassador) return target;
   const others = await tx.user.count({ where: { role: "AMBASSADOR", active: true, id: { not: changingUserId } } });
-  if (others === 0) throw new ApiError(409, "لازم يضل سفير فعّال واحد على الأقل، لأنه هو اللي بيدير الحسابات");
+  if (others === 0) throw new ApiError(409, "يجب أن يبقى سفير فعّال واحد على الأقل، لأنه المسؤول عن إدارة الحسابات");
   return target;
 }
 
@@ -84,7 +84,7 @@ export async function createUser(
     actorId,
     async (tx, audit) => {
       const exists = await tx.user.findUnique({ where: { username: input.username } });
-      if (exists) throw new ApiError(409, "اسم الدخول مستخدم");
+      if (exists) throw new ApiError(409, "اسم الدخول مستخدم مسبقاً");
       const user = await tx.user.create({
         data: {
           username: input.username,
@@ -119,7 +119,7 @@ export async function updateUser(
     actorId,
     async (tx, audit) => {
       if (actorId === userId && (input.active === false || (input.role !== undefined && input.role !== "AMBASSADOR"))) {
-        throw new ApiError(409, "ما بتقدر توقف حسابك أو تغيّر دورك");
+        throw new ApiError(409, "لا يمكنك إيقاف حسابك أو تغيير دورك");
       }
       const before = await assertAmbassadorRemains(tx, userId, input);
       const after = await tx.user.update({ where: { id: userId }, data: input, select: publicUserSelect });
@@ -148,7 +148,7 @@ export async function resetPassword(actorId: string, userId: string, db: Db = de
         data: { passwordHash, mustChangePassword: true, failedLoginCount: 0, lockedUntil: null },
       });
       const { count } = await tx.session.deleteMany({ where: { userId } });
-      audit.event("PASSWORD_RESET", "User", userId, `كلمة سر مؤقتة، وانلغت ${count} جلسة`);
+      audit.event("PASSWORD_RESET", "User", userId, `تم إصدار كلمة سر مؤقتة وإلغاء ${count} جلسة`);
     },
     db,
   );
@@ -163,7 +163,7 @@ export async function revokeSessions(actorId: string, userId: string, db: Db = d
       const user = await tx.user.findUnique({ where: { id: userId } });
       if (!user) throw notFound();
       const { count } = await tx.session.deleteMany({ where: { userId } });
-      audit.event("SESSIONS_REVOKED", "User", userId, `انلغت ${count} جلسة`);
+      audit.event("SESSIONS_REVOKED", "User", userId, `تم إلغاء ${count} جلسة`);
       return { revoked: count };
     },
     db,
@@ -180,10 +180,10 @@ export async function changeOwnPassword(
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user) throw notFound();
   if (!(await verifyPassword(user.passwordHash, input.currentPassword))) {
-    throw new ApiError(400, "كلمة السر الحالية غلط");
+    throw new ApiError(400, "كلمة السر الحالية غير صحيحة");
   }
   if (input.currentPassword === input.newPassword) {
-    throw new ApiError(400, "اختار كلمة سر جديدة غير القديمة");
+    throw new ApiError(400, "اختر كلمة سر جديدة مختلفة عن السابقة");
   }
   const passwordHash = await hashPassword(input.newPassword);
   await withAudit(

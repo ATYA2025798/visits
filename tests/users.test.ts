@@ -45,7 +45,7 @@ describe("إضافة مستخدم", () => {
 
   it("اسم دخول مكرر أو غير صالح بينرفض", async () => {
     await makeUser("amb");
-    await expect(makeUser("amb")).rejects.toThrow("اسم الدخول مستخدم");
+    await expect(makeUser("amb")).rejects.toThrow("اسم الدخول مستخدم مسبقاً");
     expect(createUserSchema.safeParse({ username: "علي", displayName: "علي", role: "AMBASSADOR" }).success).toBe(false);
     expect(createUserSchema.safeParse({ username: "ab", displayName: "x y", role: "AMBASSADOR" }).success).toBe(false);
   });
@@ -146,7 +146,7 @@ describe("كلمات السر والجلسات", () => {
     ).toBe(1);
   });
 
-  it("طرد من كل الأجهزة", async () => {
+  it("تسجيل الخروج من جميع الأجهزة", async () => {
     const admin = await makeUser("admin");
     await makeUser("amb");
     const amb = await prisma.user.findUniqueOrThrow({ where: { username: "amb" } });
@@ -167,7 +167,7 @@ describe("كلمات السر والجلسات", () => {
 
     await expect(
       changeOwnPassword(me.id, me.sessionId, { currentPassword: "wrong-one", newPassword: "new-password-9" }),
-    ).rejects.toThrow("كلمة السر الحالية غلط");
+    ).rejects.toThrow("كلمة السر الحالية غير صحيحة");
 
     await changeOwnPassword(me.id, me.sessionId, { currentPassword: PASS, newPassword: "new-password-9" });
     expect(await userFromToken(current)).not.toBeNull();

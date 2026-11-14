@@ -59,7 +59,7 @@ export default async function LinesPage({ searchParams }: { searchParams: Promis
   const chips: Array<[string | undefined, string, number]> = [
     [undefined, "الكل", all],
     ["manual", "مضاف يدوياً", manual],
-    ["missing", "مش موجود بآخر ملف", missing],
+    ["missing", "غير موجود في آخر ملف", missing],
     ["noregion", "بدون منطقة", noRegion],
   ];
 
@@ -69,8 +69,8 @@ export default async function LinesPage({ searchParams }: { searchParams: Promis
         <div>
           <h1>خطوط المشتركين</h1>
           <p className="muted">
-            الخطوط بتيجي من ملف الشهر{lastImport ? ` (آخر ملف: ${lastImport.month})` : ""}. الخط الطارئ اللي بيوصل قبل
-            الملف الجاي بينضاف يدوياً.
+            تُستورد الخطوط من ملف الشهر{lastImport ? ` (آخر ملف: ${lastImport.month})` : ""}. أما الخط الطارئ الذي يصل قبل
+            الملف القادم فيُضاف يدوياً.
           </p>
         </div>
         {canAdd && (
@@ -105,7 +105,7 @@ export default async function LinesPage({ searchParams }: { searchParams: Promis
 
         {rows.length === 0 ? (
           <div className="empty">
-            {all === 0 ? "لسا ما في خطوط. استورد ملف الشهر أو ضيف خط طارئ." : "ما في خطوط بهالبحث."}
+            {all === 0 ? "لا توجد خطوط حتى الآن. يُرجى استيراد ملف الشهر أو إضافة خط طارئ." : "لا توجد خطوط مطابقة لهذا البحث."}
           </div>
         ) : (
           <div className="table-wrap">
@@ -130,7 +130,7 @@ export default async function LinesPage({ searchParams }: { searchParams: Promis
                     <td data-label="المنطقة">
                       {l.region ?? (
                         <span className="badge badge-warn">
-                          {l.locality ? `مش معروفة (${l.locality})` : "مش معروفة"}
+                          {l.locality ? `غير معروفة (${l.locality})` : "غير معروفة"}
                         </span>
                       )}
                     </td>
@@ -143,7 +143,7 @@ export default async function LinesPage({ searchParams }: { searchParams: Promis
                     <td data-label="ملاحظة">
                       <span className="actions">
                         {l.manual && <span className="badge badge-blue">مضاف يدوياً</span>}
-                        {!l.inLatestFile && <span className="badge badge-gray">مش موجود بآخر ملف</span>}
+                        {!l.inLatestFile && <span className="badge badge-gray">غير موجود في آخر ملف</span>}
                       </span>
                     </td>
                   </tr>

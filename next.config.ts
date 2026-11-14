@@ -37,7 +37,8 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy", value: csp },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
-          { key: "Referrer-Policy", value: "same-origin" },
+          // بيبعت اسم الموقع بس (بدون المسار) للمواقع الخارجية، وهاد مطلوب لصور الخريطة من OpenStreetMap
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(self), geolocation=(self), microphone=()" },
           // المتصفحات بتتجاهله على http، وبيشتغل لحاله أول ما يصير الموقع على https
           { key: "Strict-Transport-Security", value: "max-age=31536000" },

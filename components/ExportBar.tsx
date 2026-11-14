@@ -15,7 +15,7 @@ export function ExportBar({ values, total }: { values: FilterValues; total: numb
         ) : null,
       )}
       <span className="small muted">
-        تصدير الزيارات المحددة، أو كل النتيجة ({total}) لو ما حددت شي:
+        تصدير الزيارات المحددة، أو جميع النتائج ({total}) في حال عدم التحديد:
       </span>
       <span className="actions">
         <button className="btn btn-ghost btn-sm" name="format" value="xlsx">

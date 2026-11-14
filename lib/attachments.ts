@@ -25,13 +25,13 @@ export interface DecodedImage {
 
 export function decodeImage(dataUrl: string): DecodedImage {
   const m = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(dataUrl);
-  if (!m) throw new ApiError(400, "الملف المرفق مش صورة");
-  if ((m[2].length * 3) / 4 > MAX_IMAGE_BYTES + 4) throw new ApiError(413, "الصورة كبيرة كتير (الحد 2 ميغا)");
+  if (!m) throw new ApiError(400, "الملف المرفق ليس صورة");
+  if ((m[2].length * 3) / 4 > MAX_IMAGE_BYTES + 4) throw new ApiError(413, "حجم الصورة كبير جداً (الحد الأقصى 2 ميغابايت)");
   const buffer = Buffer.from(m[2], "base64");
-  if (buffer.length > MAX_IMAGE_BYTES) throw new ApiError(413, "الصورة كبيرة كتير (الحد 2 ميغا)");
+  if (buffer.length > MAX_IMAGE_BYTES) throw new ApiError(413, "حجم الصورة كبير جداً (الحد الأقصى 2 ميغابايت)");
   const kind = MAGIC.find((k) => k.bytes.every((b, i) => buffer[i] === b));
   if (!kind || (kind.ext === "webp" && buffer.subarray(8, 12).toString("ascii") !== "WEBP")) {
-    throw new ApiError(400, "الملف المرفق مش صورة");
+    throw new ApiError(400, "الملف المرفق ليس صورة");
   }
   return { buffer, mime: kind.mime, ext: kind.ext };
 }

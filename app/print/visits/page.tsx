@@ -32,7 +32,7 @@ export default async function PrintVisits({ searchParams }: { searchParams: Prom
         <table className="ptable">
           <thead>
             <tr>
-              <th>م.</th>
+              <th>م</th>
               <th>التاريخ</th>
               <th>الخط</th>
               <th>الحساب</th>
@@ -43,9 +43,9 @@ export default async function PrintVisits({ searchParams }: { searchParams: Prom
             </tr>
           </thead>
           <tbody>
-            {rows.map((v) => (
+            {rows.map((v, i) => (
               <tr key={v.id}>
-                <td className="ltr">{v.number}</td>
+                <td className="ltr">{i + 1}</td>
                 <td>{fmtDay(v.visitedOn)}</td>
                 <td className="ltr">{v.specialCase ? "حالة خاصة" : (v.line?.code ?? v.lineCode)}</td>
                 <td>{v.accountName ?? v.line?.accountName ?? ""}</td>
@@ -70,7 +70,7 @@ export default async function PrintVisits({ searchParams }: { searchParams: Prom
                   {v.specialCase ? "حالة خاصة" : <span className="ltr">{v.line?.code ?? v.lineCode}</span>} ·{" "}
                   {v.accountName ?? v.line?.accountName ?? ""}
                 </span>
-                <span className="ltr">#{v.number}</span>
+                <span className="ltr">{fmtDay(v.visitedOn)}</span>
               </h2>
               <dl className="vb-grid">
                 <div>
@@ -132,7 +132,7 @@ export default async function PrintVisits({ searchParams }: { searchParams: Prom
           );
         })
       )}
-      {rows.length === 0 && <p className="muted">ما في زيارات.</p>}
+      {rows.length === 0 && <p className="muted">لا توجد زيارات.</p>}
     </>
   );
 }

@@ -39,7 +39,7 @@ const ROLE: Record<Sheet["role"], { text: string; tone: string }> = {
   LOG: { text: "سجل الإدارة", tone: "badge-blue" },
   TARGETS: { text: "زيارات الشهر", tone: "badge-green" },
   EXCLUDED: { text: "مستثناة", tone: "badge-warn" },
-  IGNORED: { text: "بتنتجاهل", tone: "badge-gray" },
+  IGNORED: { text: "يتم تجاهلها", tone: "badge-gray" },
 };
 
 const FIELD_NAMES: Record<string, string> = {
@@ -77,9 +77,9 @@ async function send(url: string, file: File, month: string, columnMap?: Record<s
     const data = await res.json().catch(() => ({}));
     return res.ok
       ? { ok: true as const, data }
-      : { ok: false as const, error: (data as { error?: string }).error ?? "صار خطأ" };
+      : { ok: false as const, error: (data as { error?: string }).error ?? "حدث خطأ" };
   } catch {
-    return { ok: false as const, error: "ما في اتصال بالسيرفر" };
+    return { ok: false as const, error: "تعذّر الاتصال بالخادم" };
   }
 }
 
@@ -98,7 +98,7 @@ export function ImportFlow() {
 
   async function runPreview(map = columnMap) {
     const file = pickedFile();
-    if (!file) return setError("اختار ملف الشهر");
+    if (!file) return setError("اختر ملف الشهر");
     setBusy("preview");
     setError(null);
     setDone(null);
@@ -121,7 +121,7 @@ export function ImportFlow() {
     if (!res.ok) return setError(res.error);
     const s = (res.data as { summary: Preview["summary"] }).summary;
     setDone(
-      `انحفظ ملف شهر ${month}: ${s.newLines} خط جديد، ${s.changedLines} تغيّرت بياناته، ${s.targets} زيارة للشهر.`,
+      `تم حفظ ملف شهر ${month}: ${s.newLines} خط جديد، و${s.changedLines} خط تغيّرت بياناته، و${s.targets} زيارة للشهر.`,
     );
     setPreview(null);
     setColumnMap(undefined);
@@ -177,7 +177,7 @@ export function ImportFlow() {
           </div>
           <div>
             <button className="btn btn-primary" disabled={busy !== null} onClick={() => runPreview()}>
-              {busy === "preview" ? "عم نقرأ الملف…" : "معاينة"}
+              {busy === "preview" ? "جارٍ قراءة الملف…" : "معاينة"}
             </button>
           </div>
         </div>
@@ -197,7 +197,7 @@ export function ImportFlow() {
         <>
           {preview.sameFileImportedBefore && (
             <div className="alert alert-warn" role="status">
-              نفس هالملف انرفع قبل. الحفظ مرة تانية ما بيكرر شي، بس بيحدّث.
+              سبق رفع هذا الملف. وإعادة الحفظ لا تُكرر البيانات، وإنما تُحدّثها فقط.
             </div>
           )}
           {preview.blocking.map((b) => (
@@ -208,15 +208,15 @@ export function ImportFlow() {
 
           <div className="grid grid-3">
             <Stat label="خطوط جديدة" value={s.newLines} />
-            <Stat label="تغيّرت بياناتها" value={s.changedLines} sub={`${s.unchangedLines} ما تغيّرت`} />
-            <Stat label="مش موجودة بهالملف" value={s.missingFromFile} sub="بتتعلّم وما بتنمسح" />
+            <Stat label="تغيّرت بياناتها" value={s.changedLines} sub={`${s.unchangedLines} دون تغيير`} />
+            <Stat label="غير موجودة في هذا الملف" value={s.missingFromFile} sub="تُعلَّم ولا تُحذف" />
             <Stat
               label={`زيارات شهر ${preview.month}`}
               value={s.targets}
               sub={s.excludedTargets ? `منها ${s.excludedTargets} مستثناة` : undefined}
             />
             <Stat label="أسطر سجل الإدارة" value={s.logRows} sub="الإجراء النهائي لمدير المنطقة" />
-            <Stat label="صفوف فيها مشكلة" value={s.problems} sub={s.problems ? "شوف تحت" : "ولا مشكلة"} />
+            <Stat label="صفوف بها مشكلات" value={s.problems} sub={s.problems ? "انظر أدناه" : "لا توجد مشكلات"} />
           </div>
 
           <div className="card">
@@ -228,9 +228,9 @@ export function ImportFlow() {
                 <thead>
                   <tr>
                     <th>الورقة</th>
-                    <th>شو هي</th>
+                    <th>المحتوى</th>
                     <th>الصفوف</th>
-                    <th>أعمدة إضافية بتنحفظ مع الخط</th>
+                    <th>أعمدة إضافية تُحفظ مع الخط</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -239,7 +239,7 @@ export function ImportFlow() {
                       <td className="cell-main">
                         <b>{sh.name}</b>
                       </td>
-                      <td data-label="شو هي">
+                      <td data-label="المحتوى">
                         <span className={`badge ${ROLE[sh.role].tone}`}>{ROLE[sh.role].text}</span>
                       </td>
                       <td data-label="الصفوف">{sh.rows}</td>
@@ -256,7 +256,7 @@ export function ImportFlow() {
           <details className="card" open={preview.blocking.length > 0}>
             <summary className="card-head" style={{ cursor: "pointer" }}>
               <h2>خريطة الأعمدة</h2>
-              <span className="muted small">بتنحفظ للشهر الجاي لما تغيّرها</span>
+              <span className="muted small">عند تغييرها تُحفظ للشهر القادم</span>
             </summary>
             <div className="card-pad form-grid">
               {Object.entries(preview.fields).map(([field, label]) => {
@@ -286,8 +286,8 @@ export function ImportFlow() {
 
           {preview.unknownLocalities.length > 0 && (
             <div className="alert alert-warn" role="status">
-              أماكن مش معروفة منطقتها: {preview.unknownLocalities.join("، ")}. الخطوط بتنحفظ عادي، بس بدون منطقة لحد ما
-              تنضاف للقائمة.
+              أماكن غير معروفة المنطقة: {preview.unknownLocalities.join("، ")}. ستُحفظ الخطوط بشكل اعتيادي، ولكن دون منطقة إلى أن
+              تُضاف هذه الأماكن إلى القائمة.
             </div>
           )}
 
@@ -295,7 +295,7 @@ export function ImportFlow() {
             <div className="card">
               <div className="card-head">
                 <h2>صفوف فيها مشكلة ({s.problems})</h2>
-                <span className="muted small">بتنتجاهل، والباقي بينحفظ</span>
+                <span className="muted small">يتم تجاهلها، ويُحفظ الباقي</span>
               </div>
               <div className="table-wrap">
                 <table className="table">
@@ -323,7 +323,7 @@ export function ImportFlow() {
           {preview.changed.length > 0 && (
             <details className="card">
               <summary className="card-head" style={{ cursor: "pointer" }}>
-                <h2>الخطوط اللي تغيّرت بياناتها ({s.changedLines})</h2>
+                <h2>الخطوط التي تغيّرت بياناتها ({s.changedLines})</h2>
               </summary>
               <div className="table-wrap">
                 <table className="table">
@@ -357,10 +357,10 @@ export function ImportFlow() {
           )}
 
           <div className="card card-pad actions" style={{ justifyContent: "space-between" }}>
-            <span className="muted">لما تحفظ، كل شي فوق بيتطبق متل ما هو بالضبط.</span>
+            <span className="muted">عند الحفظ، يُطبَّق كل ما سبق كما هو تماماً.</span>
             <button className="btn btn-green" disabled={busy !== null || preview.blocking.length > 0} onClick={save}>
               {busy === "save" ? (
-                "عم نحفظ…"
+                "جارٍ الحفظ…"
               ) : (
                 <>
                   حفظ ملف شهر <bdi dir="ltr">{preview.month}</bdi>

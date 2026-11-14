@@ -5,6 +5,7 @@
  * ترتيب الطبقات ثابت ومفحوص لعمى الألوان: التجاوز على الأساس، وبعده فحص شبكة، لا يوجد تجاوز،
  * غير ناجحة، إعادة زيارة. الألوان من القوائم (نفس ألوان دبابيس الخريطة).
  */
+import { fmtMonth, fmtMonthShort } from "@/lib/format";
 import { useEffect, useRef, useState } from "react";
 
 type Part = { label: string; color: string | null; count: number };
@@ -14,10 +15,8 @@ const ORDER = ["يوجد تجاوز", "فحص شبكة", "لا يوجد تجاو
 const OTHER = "#c9d1d9";
 const LEGACY = "قيم قديمة";
 
-const monthFmt = new Intl.DateTimeFormat("ar-PS-u-nu-latn", { month: "short", timeZone: "UTC" });
-const monthLong = new Intl.DateTimeFormat("ar-PS-u-nu-latn", { month: "long", year: "numeric", timeZone: "UTC" });
 const label = (m: string, narrow = false) =>
-  narrow ? `${Number(m.slice(5))}/${m.slice(2, 4)}` : monthFmt.format(new Date(`${m}-01T00:00:00Z`));
+  narrow ? `${Number(m.slice(5))}/${m.slice(2, 4)}` : fmtMonthShort(m);
 
 function niceMax(n: number) {
   if (n <= 5) return 5;
@@ -124,7 +123,7 @@ export function MonthlyChart({ months: input }: { months: Month[] }) {
                   onFocus={() => setHover(i)}
                   onClick={() => setHover(i)}
                   tabIndex={0}
-                  aria-label={`${monthLong.format(new Date(`${m.month}-01T00:00:00Z`))}: ${m.total} زيارة`}
+                  aria-label={`${fmtMonth(m.month)}: ${m.total} زيارة`}
                 />
               </g>
             );
@@ -141,7 +140,7 @@ export function MonthlyChart({ months: input }: { months: Month[] }) {
                 : { top: 8, left: Math.min(W - 190, x(hover) + barW + 8), right: "auto" }
             }
           >
-            <b>{monthLong.format(new Date(`${h.month}-01T00:00:00Z`))}</b>
+            <b>{fmtMonth(h.month)}</b>
             <div className="tooltip-total">{h.total} زيارة</div>
             {series
               .map((s) => ({ s, n: h.parts.find((p) => p.label === s)?.count ?? 0 }))
@@ -173,7 +172,7 @@ export function MonthlyChart({ months: input }: { months: Month[] }) {
             <tbody>
               {[...fold(all)].reverse().map((m) => (
                 <tr key={m.month}>
-                  <td>{monthLong.format(new Date(`${m.month}-01T00:00:00Z`))}</td>
+                  <td>{fmtMonth(m.month)}</td>
                   {series.map((s) => (
                     <td key={s}>{m.parts.find((p) => p.label === s)?.count ?? 0}</td>
                   ))}

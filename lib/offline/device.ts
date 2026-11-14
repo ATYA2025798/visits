@@ -5,15 +5,15 @@ export type Gps = { lat: number; lng: number; accuracy: number };
 /** GPS بيشتغل بدون نت. بنستنى لغاية 20 ثانية لأحسن دقة */
 export function readGps(timeout = 20_000): Promise<Gps> {
   return new Promise((resolve, reject) => {
-    if (!("geolocation" in navigator)) return reject(new Error("الجوال ما بيدعم تحديد الموقع"));
+    if (!("geolocation" in navigator)) return reject(new Error("الجهاز لا يدعم تحديد الموقع"));
     navigator.geolocation.getCurrentPosition(
       (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy }),
       (e) =>
         reject(
           new Error(
             e.code === e.PERMISSION_DENIED
-              ? "اسمح للتطبيق يوصل للموقع من إعدادات الجوال"
-              : "ما قدرنا نحدد الموقع، جرّب برّا أو استنى شوي",
+              ? "يُرجى السماح للتطبيق بالوصول إلى الموقع من إعدادات الجهاز"
+              : "تعذّر تحديد الموقع، يُرجى المحاولة في مكان مكشوف أو الانتظار قليلاً",
           ),
         ),
       { enableHighAccuracy: true, timeout, maximumAge: 30_000 },

@@ -57,7 +57,7 @@ describe("تسجيل زيارة (المهمة 9)", () => {
       visitedOn: "2026-11-12",
       recommendationId: fine,
     });
-    expect(r.warning).toContain("مش موجود");
+    expect(r.warning).toContain("غير موجود");
     expect(r.visit).toMatchObject({ lineId: null, lineCodeKey: "G9999001", accountName: "حساب جديد" });
   });
 
@@ -81,7 +81,7 @@ describe("تسجيل زيارة (المهمة 9)", () => {
     );
     await expect(
       createVisit(ali, { specialCase: true, visitedOn: "2026-11-12", recommendationId: fine }),
-    ).rejects.toThrow("الاسم");
+    ).rejects.toThrow("اسم");
     await expect(createVisit(ali, { lineCode: "G-7872-002", visitedOn: "2026-11-12" } as never)).rejects.toThrow(
       "التوصية",
     );

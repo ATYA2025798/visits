@@ -14,7 +14,7 @@ export const LIST_LABEL: Record<ListKind, string> = { RECOMMENDATION: "التو�
 
 export const addListItemSchema = z.object({
   kind: z.enum(LIST_KINDS),
-  label: z.string().trim().min(2, "اكتب القيمة").max(100, "القيمة طويلة"),
+  label: z.string().trim().min(2, "أدخل القيمة").max(100, "القيمة طويلة جداً"),
   color: z
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/, "لون غير صالح")
@@ -35,7 +35,7 @@ export async function addListItem(actorId: string, raw: z.input<typeof addListIt
     async (tx, audit) => {
       const exists = await tx.listItem.findUnique({ where: { kind_label: { kind: input.kind, label: input.label } } });
       if (exists)
-        throw new ApiError(409, exists.active ? "القيمة موجودة" : "القيمة موجودة بس موقوفة، رجّعها بدل ما تضيفها");
+        throw new ApiError(409, exists.active ? "القيمة موجودة مسبقاً" : "القيمة موجودة لكنها موقوفة، يُرجى استرجاعها بدلاً من إضافتها مجدداً");
       const last = await tx.listItem.aggregate({
         where: { kind: input.kind, active: true },
         _max: { sortOrder: true },
@@ -80,7 +80,7 @@ export async function moveListItem(actorId: string, id: string, direction: "up" 
       [order[i], order[j]] = [order[j], order[i]];
       for (const [n, sid] of order.entries())
         await tx.listItem.update({ where: { id: sid }, data: { sortOrder: n + 1 } });
-      audit.event("UPDATE", "ListItem", id, `ترتيب: ${item.label} ${direction === "up" ? "لفوق" : "لتحت"}`);
+      audit.event("UPDATE", "ListItem", id, `ترتيب: ${item.label} ${direction === "up" ? "إلى الأعلى" : "إلى الأسفل"}`);
       return item;
     },
     db,

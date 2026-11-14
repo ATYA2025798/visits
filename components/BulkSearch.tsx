@@ -16,8 +16,8 @@ type Row = {
 const STATUS: Record<Row["status"], { text: string; tone: string }> = {
   FOUND: { text: "موجود", tone: "badge-green" },
   NOT_FOUND: { text: "غير موجود", tone: "badge-gray" },
-  DUPLICATE: { text: "مكرر بالقائمة", tone: "badge-warn" },
-  INVALID: { text: "مش صالح", tone: "badge-red" },
+  DUPLICATE: { text: "مكرر في القائمة", tone: "badge-warn" },
+  INVALID: { text: "غير صالح", tone: "badge-red" },
 };
 
 export function BulkSearch() {
@@ -66,7 +66,7 @@ export function BulkSearch() {
     <div className="grid">
       <form className="card card-pad grid" onSubmit={onSubmit}>
         <div className="field">
-          <label htmlFor="codes">الأكواد (كود بكل سطر، لغاية 1000)</label>
+          <label htmlFor="codes">الأكواد (كود في كل سطر، بحد أقصى 1000)</label>
           <textarea
             id="codes"
             name="codes"
@@ -75,7 +75,7 @@ export function BulkSearch() {
             placeholder={"G-7872-002\nG-6903-003"}
             required
           />
-          <span className="hint">بتقدر تلصق عمود كامل من الإكسل.</span>
+          <span className="hint">يمكنك لصق عمود كامل من ملف الإكسل.</span>
         </div>
         {error && (
           <div className="alert alert-error" role="alert">
@@ -84,7 +84,7 @@ export function BulkSearch() {
         )}
         <div>
           <button className="btn btn-primary" type="submit" disabled={busy}>
-            {busy ? "عم ندوّر…" : "بحث"}
+            {busy ? "جارٍ البحث…" : "بحث"}
           </button>
         </div>
       </form>

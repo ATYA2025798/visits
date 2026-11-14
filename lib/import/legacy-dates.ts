@@ -28,7 +28,7 @@ export function parseLegacyDate(raw: unknown): LegacyDate {
         date: utc(y, shownMonth, shownDay),
         method: "unswappable",
         doubtful: true,
-        reason: "خلية تاريخ يومها أكبر من 12، فما بتنقلب. تأكد منها",
+        reason: "خلية تاريخ يزيد فيها اليوم على 12، لذا لا يمكن عكسها. يُرجى التحقق منها",
       };
     }
     return { date: utc(y, shownDay, shownMonth), method: "swapped", doubtful: false };
@@ -38,7 +38,7 @@ export function parseLegacyDate(raw: unknown): LegacyDate {
     const date = utc(Number(m[3]), Number(m[1]), Number(m[2]));
     if (date) return { date, method: "text", doubtful: false };
   }
-  return { date: null, method: "invalid", doubtful: true, reason: `تاريخ مش مفهوم: ${String(raw ?? "فاضي")}` };
+  return { date: null, method: "invalid", doubtful: true, reason: `تاريخ غير مفهوم: ${String(raw ?? "فارغ")}` };
 }
 
 const DAY = 24 * 60 * 60_000;

@@ -45,11 +45,11 @@ const TESTS = [
   "مطابقة عدد المستخدمين مع نوع الاشتراك",
 ];
 const RESULTS: Record<string, string[]> = {
-  "يوجد تجاوز": ["الخط موزّع على شبكة خارجية بأكتر من 20 مستخدم", "في بيع بطاقات إنترنت من الخط"],
-  "لا يوجد تجاوز": ["الاستخدام مطابق للاشتراك", "الأجهزة كلها داخل المحل"],
-  "إعادة زيارة": ["المحل مسكّر وقت الزيارة", "صاحب الخط مش موجود، بدنا نرجع"],
-  "زيارة غير ناجحة": ["ما قدرنا نوصل للمكان", "رفض يسمح بالفحص"],
-  "فحص شبكة": ["في شبكة مجهولة قريبة بتحتاج متابعة", "فحص الشبكات المحيطة"],
+  "يوجد تجاوز": ["الخط موزّع على شبكة خارجية لأكثر من 20 مستخدماً", "تُباع بطاقات إنترنت من الخط"],
+  "لا يوجد تجاوز": ["الاستخدام مطابق للاشتراك", "جميع الأجهزة داخل المحل"],
+  "إعادة زيارة": ["المحل مغلق وقت الزيارة", "صاحب الخط غير موجود، وتلزم زيارة أخرى"],
+  "زيارة غير ناجحة": ["تعذّر الوصول إلى المكان", "رفض السماح بإجراء الفحص"],
+  "فحص شبكة": ["توجد شبكة مجهولة قريبة تحتاج إلى متابعة", "فحص الشبكات المحيطة"],
 };
 
 const warn = (e: unknown) => console.warn("تنبيه:", (e as Error)?.message ?? e);
@@ -60,6 +60,16 @@ function daysAgo(n: number) {
   return d.toISOString().slice(0, 10);
 }
 
+const TEXT_FIXES: Array<[string, string]> = [["الخط موزّع على شبكة خارجية بأكتر من 20 مستخدم", "الخط موزّع على شبكة خارجية لأكثر من 20 مستخدماً"], ["في بيع بطاقات إنترنت من الخط", "تُباع بطاقات إنترنت من الخط"], ["الأجهزة كلها داخل المحل", "جميع الأجهزة داخل المحل"], ["المحل مسكّر وقت الزيارة", "المحل مغلق وقت الزيارة"], ["صاحب الخط مش موجود، بدنا نرجع", "صاحب الخط غير موجود، وتلزم زيارة أخرى"], ["ما قدرنا نوصل للمكان", "تعذّر الوصول إلى المكان"], ["رفض يسمح بالفحص", "رفض السماح بإجراء الفحص"], ["في شبكة مجهولة قريبة بتحتاج متابعة", "توجد شبكة مجهولة قريبة تحتاج إلى متابعة"], ["السيارة مش متاحة اليوم", "السيارة غير متاحة اليوم"], ["المحل مسكّر للجرد", "المحل مغلق للجرد"], ["تصحيح: عدد المستخدمين 25 مش 20", "تصحيح: عدد المستخدمين 25 وليس 20"], ["رقمنا الصحيح بعد المراجعة", "الرقم الصحيح بعد المراجعة"]];
+
+/** نسخة العرض المنشورة قبل توحيد اللغة الرسمية: تحديث النصوص التجريبية القديمة بمكانها */
+async function refreshDemoTexts() {
+  for (const [from, to] of TEXT_FIXES) {
+    await prisma.$executeRaw`UPDATE "visits" SET "result" = replace("result", ${from}, ${to}) WHERE "result" LIKE '%' || ${from} || '%'`;
+    await prisma.$executeRaw`UPDATE "revisit_postponements" SET "reason" = replace("reason", ${from}, ${to}) WHERE "reason" LIKE '%' || ${from} || '%'`;
+  }
+}
+
 async function main() {
   const password = process.env.DEMO_PASSWORD;
   if (!password || password.length < 8) throw new Error("DEMO_PASSWORD لازم ينضبط (8 أحرف على الأقل)");
@@ -67,6 +77,7 @@ async function main() {
   if (lines || visits) {
     // --if-empty: للتشغيل التلقائي مع كل إقلاع (Render)؛ إذا البيانات موجودة ما بنعمل شي
     if (process.argv.includes("--if-empty")) {
+      await refreshDemoTexts().catch(warn);
       console.log("نسخة العرض فيها بيانات أصلاً");
       return;
     }
@@ -171,8 +182,8 @@ async function main() {
   // تأجيلات على إعادات الزيارة المفتوحة
   const revisits = created.filter((c) => c.rec === "إعادة زيارة").slice(-12);
   for (const [i, r] of revisits.entries()) {
-    await postponeRevisit(r.owner, r.id, "السيارة مش متاحة اليوم").catch(warn);
-    if (i % 3 === 0) await postponeRevisit(r.owner, r.id, "المحل مسكّر للجرد").catch(warn);
+    await postponeRevisit(r.owner, r.id, "السيارة غير متاحة اليوم").catch(warn);
+    if (i % 3 === 0) await postponeRevisit(r.owner, r.id, "المحل مغلق للجرد").catch(warn);
   }
 
   // تجاوز بدون إجراء، وتعديل حالة
@@ -181,7 +192,7 @@ async function main() {
 
   // طلب تعديل بين سفيرين
   const target = created.find((c) => c.owner.id === amb[1].id);
-  if (target) await requestReportEdit(amb[0], target.id, { changes: { result: "تصحيح: عدد المستخدمين 25 مش 20" }, reason: "رقمنا الصحيح بعد المراجعة" }).catch(warn);
+  if (target) await requestReportEdit(amb[0], target.id, { changes: { result: "تصحيح: عدد المستخدمين 25 وليس 20" }, reason: "الرقم الصحيح بعد المراجعة" }).catch(warn);
 
   // بيانات دخول مايكروتيك (لو المفتاح مضبوط)
   if (process.env.MIKROTIK_KEY) {

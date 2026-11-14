@@ -4,7 +4,7 @@ import { requirePermission } from "@/lib/session";
 import { linesNeedingAccess } from "@/lib/mikrotik";
 import { fmtDay } from "@/components/visit-ui";
 
-export const metadata: Metadata = { title: "بحاجة access" };
+export const metadata: Metadata = { title: "بحاجة إلى صلاحية access" };
 
 export default async function AccessPage() {
   await requirePermission("visits:view");
@@ -13,13 +13,13 @@ export default async function AccessPage() {
     <>
       <div className="page-head">
         <div>
-          <h1>بحاجة access</h1>
-          <p className="muted">خطوط آخر زيارة إلها قالت: ما في access للشركة على المايكروتيك، ولسا ما انعمل يوزر.</p>
+          <h1>بحاجة إلى صلاحية access</h1>
+          <p className="muted">خطوط أفادت آخر زيارة لها بعدم وجود صلاحية access للشركة على المايكروتيك، ولم يُنشأ مستخدم بعد.</p>
         </div>
       </div>
       <div className="card">
         {rows.length === 0 ? (
-          <div className="empty">ولا خط.</div>
+          <div className="empty">لا توجد خطوط.</div>
         ) : (
           <div className="table-wrap">
             <table className="table stack">

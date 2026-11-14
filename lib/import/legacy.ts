@@ -63,7 +63,7 @@ function findSheet(sheets: Sheet[]): Sheet {
   const sheet =
     sheets.find((s) => s.name === "Sheet1") ??
     sheets.find((s) => normArabic(s.headers[0] ?? "") === normArabic("م.") && s.headers.some((h) => /تاريخ/.test(h)));
-  if (!sheet) throw new ApiError(400, "ما لقينا ورقة الزيارات (Sheet1) بالملف");
+  if (!sheet) throw new ApiError(400, "لم يُعثر على ورقة الزيارات (Sheet1) في الملف");
   return sheet;
 }
 
@@ -139,14 +139,14 @@ export async function analyzeLegacyFile(
   );
   drafts.forEach((d, i) => {
     if (d.dateDoubtful) {
-      doubtful.push({ number: d.number, row: d.row, dateText: d.dateText, reason: d.dateReason ?? "تاريخ مش مفهوم" });
+      doubtful.push({ number: d.number, row: d.row, dateText: d.dateText, reason: d.dateReason ?? "تاريخ غير مفهوم" });
     } else if (orderFlags[i]) {
       d.dateDoubtful = true;
       doubtful.push({
         number: d.number,
         row: d.row,
         dateText: d.dateText,
-        reason: "خارج ترتيب الصفوف بأكتر من 3 أيام أو بالمستقبل",
+        reason: "خارج ترتيب الصفوف بأكثر من 3 أيام أو في المستقبل",
       });
     }
   });
@@ -309,7 +309,7 @@ export async function applyLegacyImport(
         "IMPORT",
         "Visit",
         "legacy",
-        `نقل الزيارات القديمة (${opts.fileName}): ${created} جديدة، ${updated} تحدّثت، ${unchanged} ما تغيّرت، ${plan.summary.doubtfulDates} تاريخ للمراجعة`,
+        `نقل الزيارات القديمة (${opts.fileName}): ${created} جديدة، ${updated} حُدّثت، ${unchanged} دون تغيير، ${plan.summary.doubtfulDates} تاريخ للمراجعة`,
       );
       return { created, updated, unchanged };
     },

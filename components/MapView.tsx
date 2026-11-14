@@ -5,6 +5,7 @@
  * دبوس لكل خط بلون آخر توصية، والدبابيس المتقاربة بتتجمع بدائرة فيها رقم.
  * التمرير بيعرض الاسم والكود والعدد وآخر زيارة، والنقر بيفتح لوحة جانبية.
  */
+import { fmtIsoDay } from "@/lib/format";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import "leaflet/dist/leaflet.css";
@@ -54,7 +55,7 @@ export function MapView({ query, showVpn }: { query: string; showVpn: boolean })
     let stop = false;
     fetch(`/api/map?${query}`, { credentials: "same-origin" })
       .then(async (r) => {
-        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error ?? "ما قدرنا نجيب بيانات الخريطة");
+        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error ?? "تعذّر تحميل بيانات الخريطة");
         return r.json() as Promise<MapData>;
       })
       .then((d) => !stop && setData(d))
@@ -74,6 +75,8 @@ export function MapView({ query, showVpn }: { query: string; showVpn: boolean })
       const map = L.map(el.current, { zoomControl: true, attributionControl: true }).setView(GAZA, 11);
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
+        // سياسة OpenStreetMap: طلبات الخريطة لازم تحمل اسم الموقع (Referer)، وإلا بترجع «Access blocked»
+        referrerPolicy: "strict-origin-when-cross-origin",
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map);
       mapRef.current = map;
@@ -105,7 +108,7 @@ export function MapView({ query, showVpn }: { query: string; showVpn: boolean })
         const m = L.marker([p.lat, p.lng], { icon: pinIcon(L, p.color ?? NO_REC), title: p.code, keyboard: true });
         m.bindTooltip(
           `<b>${esc(p.name ?? "—")}</b><br><span dir="ltr">${esc(p.code)}</span><br>${p.visits} زيارة · آخر زيارة ${esc(
-            p.lastVisitOn ?? "—",
+            fmtIsoDay(p.lastVisitOn),
           )}${p.lastRec ? ` · ${esc(p.lastRec)}` : ""}`,
           { direction: "top", offset: [0, -10] },
         );
@@ -124,7 +127,7 @@ export function MapView({ query, showVpn }: { query: string; showVpn: boolean })
             fillOpacity: 0.9,
           });
           m.bindTooltip(
-            `<b>VPN: ${esc(v.networkName)}</b><br><span dir="ltr">${esc(v.ip)}</span><br>${esc(v.day)} · ${esc(v.owner)}`,
+            `<b>VPN: ${esc(v.networkName)}</b><br><span dir="ltr">${esc(v.ip)}</span><br>${esc(fmtIsoDay(v.day))} · ${esc(v.owner)}`,
             { direction: "top" },
           );
           group.addLayer(m);
@@ -164,7 +167,7 @@ export function MapView({ query, showVpn }: { query: string; showVpn: boolean })
               <b data-testid="pin-count">{data.pins.length}</b> خط على الخريطة
             </span>
             <span>
-              <b data-testid="no-location">{data.withoutLocation}</b> خط لسا ما إله موقع
+              <b data-testid="no-location">{data.withoutLocation}</b> خط ليس له موقع بعد
             </span>
             {showVpn && (
               <span>
@@ -173,7 +176,7 @@ export function MapView({ query, showVpn }: { query: string; showVpn: boolean })
             )}
           </>
         ) : (
-          <span className="muted">عم نحمّل…</span>
+          <span className="muted">جارٍ التحميل…</span>
         )}
       </div>
       <div className="map-body">
@@ -216,13 +219,13 @@ export function MapView({ query, showVpn }: { query: string; showVpn: boolean })
                   الزيارات ({shown?.total ?? panelPin.visits})
                 </div>
                 {!shown ? (
-                  <div className="small muted">عم نحمّل…</div>
+                  <div className="small muted">جارٍ التحميل…</div>
                 ) : (
                   <ul className="alert-list">
                     {shown.visits.map((v) => (
                       <li key={v.id}>
                         <Link href={`/visits/${v.id}`} className="ltr">
-                          {v.day ?? "—"}
+                          {fmtIsoDay(v.day)}
                         </Link>{" "}
                         {v.rec && (
                           <span className="legend-item small">
@@ -237,7 +240,7 @@ export function MapView({ query, showVpn }: { query: string; showVpn: boolean })
                 )}
               </div>
               <Link className="btn btn-primary" href={`/search?code=${encodeURIComponent(panelPin.code)}`}>
-                كل تاريخ الخط
+                السجل الكامل للخط
               </Link>
             </div>
           </aside>

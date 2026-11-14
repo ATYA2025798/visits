@@ -10,7 +10,7 @@ export const POST = handler<{ params: Promise<{ id: string }> }>(async (req, { p
   const id = await idParam(params);
   const { accountPassword } = await parseBody(
     req,
-    z.object({ accountPassword: z.string().min(1, "اكتب كلمة سر حسابك").max(200) }),
+    z.object({ accountPassword: z.string().min(1, "أدخل كلمة سر حسابك").max(200) }),
   );
   const secret = await revealCredential(actor, id, accountPassword);
   return NextResponse.json(secret, { headers: { "Cache-Control": "no-store" } });

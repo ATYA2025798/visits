@@ -24,9 +24,9 @@ export function fileResponse(body: Buffer, name: string, type: "xlsx" | "pdf") {
 
 export async function pdfResponse(req: NextRequest, printPath: string, name: string) {
   const token = req.cookies.get(SESSION_COOKIE)?.value;
-  if (!token) throw new ApiError(401, "لازم تسجّل دخول");
+  if (!token) throw new ApiError(401, "يجب تسجيل الدخول");
   const rl = pdfLimiter.hit(token);
-  if (!rl.ok) throw new RateLimitError(rl.retryAfterSec, "طلبت PDF كتير ورا بعض. استنى دقيقة.");
+  if (!rl.ok) throw new RateLimitError(rl.retryAfterSec, "عدد كبير من طلبات PDF المتتالية. يُرجى الانتظار دقيقة.");
   try {
     return fileResponse(await renderPdf(printPath, token), name, "pdf");
   } catch (err) {

@@ -50,7 +50,7 @@ async function withoutDefinedNames(buffer: Buffer | ArrayBuffer): Promise<Buffer
   zip.forEach((_path, file) => {
     total += (file as unknown as { _data?: { uncompressedSize?: number } })._data?.uncompressedSize ?? 0;
   });
-  if (total > MAX_UNZIPPED_BYTES) throw new ApiError(413, "الملف كبير كتير بعد فك الضغط");
+  if (total > MAX_UNZIPPED_BYTES) throw new ApiError(413, "حجم الملف كبير جداً بعد فك الضغط");
   const entry = zip.file("xl/workbook.xml");
   if (entry) {
     const xml = await entry.async("string");
@@ -65,7 +65,7 @@ export async function readWorkbook(buffer: Buffer | ArrayBuffer): Promise<Sheet[
     await wb.xlsx.load((await withoutDefinedNames(buffer)) as unknown as ArrayBuffer);
   } catch (err) {
     if (err instanceof ApiError) throw err;
-    throw new ApiError(400, "الملف مش ملف إكسل (xlsx) أو تالف");
+    throw new ApiError(400, "الملف ليس ملف إكسل (xlsx) أو أنه تالف");
   }
   return wb.worksheets.map((ws) => {
     const headerRow = ws.getRow(1);

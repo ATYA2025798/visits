@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "زيارات السفراء — جوال",
     short_name: "الميدان",
-    description: "تسجيل الزيارات وحالات VPN والبطاقات من الميدان، حتى بدون نت",
+    description: "تسجيل الزيارات وحالات VPN والبطاقات من الميدان، حتى دون اتصال بالإنترنت",
     start_url: "/m",
     scope: "/",
     display: "standalone",

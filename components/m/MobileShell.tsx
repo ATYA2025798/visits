@@ -4,6 +4,7 @@
  * إطار تطبيق الميدان: القوائم المحفوظة بالجوال، شريط «بانتظار الإرسال»، وتشغيل الإرسال التلقائي.
  * الصفحات تحت /m ما بتحتاج السيرفر لتنعرض، فبتفتح بدون نت من نسخة الـ Service Worker.
  */
+import { fmtDateTime } from "@/lib/format";
 import { createContext, useCallback, useContext, useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { BrandMark } from "@/components/Brand";
@@ -95,7 +96,7 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
             </span>
           </Link>
           <span className={`badge ${online ? "badge-green" : "badge-gray"}`} data-testid="net">
-            {online ? "متصل" : "بدون نت"}
+            {online ? "متصل" : "دون اتصال"}
           </span>
         </header>
 
@@ -109,13 +110,13 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
                   </b>
                 )}
                 {pending.length > 0 && !online && (
-                  <span className="muted small"> · بتنبعت لحالها أول ما يرجع النت</span>
+                  <span className="muted small"> · تُرسَل تلقائياً فور عودة الاتصال</span>
                 )}
-                {failed.length > 0 && <b className="warn-text"> {failed.length} ما انقبلت</b>}
+                {failed.length > 0 && <b className="warn-text"> {failed.length} مرفوضة</b>}
               </span>
               {online && pending.length > 0 && (
                 <button className="btn btn-sm btn-primary" disabled={sending} onClick={() => void flush()}>
-                  {sending ? "عم نبعت…" : "إرسال هلأ"}
+                  {sending ? "جارٍ الإرسال…" : "إرسال الآن"}
                 </button>
               )}
             </div>
@@ -137,7 +138,7 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
                   <button
                     className="btn btn-danger btn-sm"
                     onClick={async () => {
-                      if (!window.confirm("حذف هالعنصر من الجوال؟ ما رح ينبعت.")) return;
+                      if (!window.confirm("هل تريد حذف هذا العنصر من الجهاز؟ لن يتم إرساله.")) return;
                       await deleteItem(f.uuid);
                       refreshQueue();
                     }}
@@ -152,17 +153,17 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
 
         {needsLogin && (
           <div className="alert alert-warn" style={{ margin: "10px 14px 0" }}>
-            انتهت جلستك. <a href="/login">ادخل من جديد</a> عشان ينبعت اللي بانتظار الإرسال (ما رح يضيع).
+            انتهت جلستك. <a href="/login">سجّل الدخول مجدداً</a> لإرسال العناصر المنتظرة (لن تُفقد).
           </div>
         )}
         {bootState === "none" && (
           <div className="alert alert-warn" style={{ margin: "10px 14px 0" }}>
-            افتح التطبيق مرة وحدة مع نت عشان تنحفظ القوائم بالجوال.
+            يُرجى فتح التطبيق مرة واحدة أثناء الاتصال بالإنترنت لحفظ القوائم على الجهاز.
           </div>
         )}
         {bootState === "cache" && !online && boot && (
           <div className="small muted" style={{ margin: "8px 14px 0" }}>
-            القوائم من آخر مرة اتصلت ({new Date(boot.savedAt).toLocaleDateString("ar-PS-u-nu-latn")}).
+            القوائم من آخر مرة اتصلت ({fmtDateTime(new Date(boot.savedAt))}).
           </div>
         )}
         <main className="m-main">{children}</main>

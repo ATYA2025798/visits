@@ -28,7 +28,7 @@ export function ListEditor({
     setError(null);
     const res = await p;
     setBusy(false);
-    if (!res.ok) setError(res.error ?? "صار خطأ");
+    if (!res.ok) setError(res.error ?? "حدث خطأ");
     else router.refresh();
     return res.ok;
   }
@@ -62,7 +62,7 @@ export function ListEditor({
               <span className="actions">
                 <button
                   className="btn btn-ghost btn-sm"
-                  aria-label={`${item.label} لفوق`}
+                  aria-label={`${item.label} إلى الأعلى`}
                   disabled={busy || i === 0}
                   onClick={() => run(patchJson(`/api/lists/${item.id}`, { move: "up" }))}
                 >
@@ -70,7 +70,7 @@ export function ListEditor({
                 </button>
                 <button
                   className="btn btn-ghost btn-sm"
-                  aria-label={`${item.label} لتحت`}
+                  aria-label={`${item.label} إلى الأسفل`}
                   disabled={busy || i === active.length - 1}
                   onClick={() => run(patchJson(`/api/lists/${item.id}`, { move: "down" }))}
                 >
@@ -101,7 +101,7 @@ export function ListEditor({
       )}
       {inactive.length > 0 && (
         <details className="list-inactive">
-          <summary className="small muted">موقوفة ({inactive.length}): بتظهر بالزيارات القديمة بس</summary>
+          <summary className="small muted">موقوفة ({inactive.length}): تظهر في الزيارات القديمة فقط</summary>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {inactive.map((item) => (
               <li key={item.id} className="list-row">
@@ -112,7 +112,7 @@ export function ListEditor({
                     disabled={busy}
                     onClick={() => run(patchJson(`/api/lists/${item.id}`, { active: true }))}
                   >
-                    رجّعها
+                    استرجاع
                   </button>
                 )}
               </li>

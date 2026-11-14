@@ -52,7 +52,7 @@ export async function bulkLookup(text: string, db: Db = defaultPrisma): Promise<
     .split(/[\n\r,\t;]+/)
     .map((s) => s.trim())
     .filter(Boolean);
-  if (inputs.length > MAX_BULK_CODES) throw new ApiError(400, `الحد ${MAX_BULK_CODES} كود بالمرة`);
+  if (inputs.length > MAX_BULK_CODES) throw new ApiError(400, `الحد الأقصى ${MAX_BULK_CODES} كود في المرة الواحدة`);
   const keys = [...new Set(inputs.filter(isValidLineCode).map(normalizeLineCode))];
 
   const [lines, counts, latest] = await Promise.all([

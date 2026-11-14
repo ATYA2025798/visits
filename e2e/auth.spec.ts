@@ -33,7 +33,7 @@ test("طلب من موقع تاني بينرفض (CSRF)", async ({ request }) =>
 
 test("دخول غلط، ثم دخول صحيح، ثم خروج", async ({ page }) => {
   await loginAs(page, ALI.username, "wrong-password");
-  await expect(page.locator(".alert-error")).toContainText("اسم الدخول أو كلمة السر غلط");
+  await expect(page.locator(".alert-error")).toContainText("اسم الدخول أو كلمة السر غير صحيح");
 
   await loginAsAli(page);
   await expect(page.getByRole("link", { name: "المستخدمون" }).first()).toBeVisible();

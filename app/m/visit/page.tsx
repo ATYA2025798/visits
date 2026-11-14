@@ -24,7 +24,7 @@ export default function MobileVisit() {
         }}
       />
     );
-  if (!boot) return <p className="muted">عم نحمّل القوائم…</p>;
+  if (!boot) return <p className="muted">جارٍ تحميل القوائم…</p>;
   return <VisitFields key={form} onSaved={setSaved} online={online} />;
 }
 
@@ -56,7 +56,7 @@ function VisitFields({ onSaved, online }: { onSaved: (t: string) => void; online
       if (d.line) {
         if (!name) setName(d.line.accountName ?? "");
         setHint(`${d.line.accountName ?? ""}${d.openRevisit ? " · بانتظار إعادة زيارة" : ""}`);
-      } else setHint("مش بملف المشتركين، اكتب اسم الحساب");
+      } else setHint("غير موجود في ملف المشتركين، يُرجى إدخال اسم الحساب");
     } catch {
       setHint("");
     }
@@ -64,9 +64,9 @@ function VisitFields({ onSaved, online }: { onSaved: (t: string) => void; online
 
   async function save() {
     setError("");
-    if (!special && !isValidLineCode(code)) return setError("اكتب Line Code صالح، أو اختار «حالة خاصة»");
-    if (special && !name.trim()) return setError("اكتب الاسم للحالة الخاصة");
-    if (!rec) return setError("اختار التوصية");
+    if (!special && !isValidLineCode(code)) return setError("أدخل Line Code صالحاً، أو اختر «حالة خاصة»");
+    if (special && !name.trim()) return setError("أدخل اسم الحالة الخاصة");
+    if (!rec) return setError("اختر التوصية");
     setBusy(true);
     const payload = {
       lineCode: special ? null : code.trim(),
@@ -90,7 +90,7 @@ function VisitFields({ onSaved, online }: { onSaved: (t: string) => void; online
     rememberRecent({ uuid: item.uuid, kind: "VISIT", label, at: item.filledAt });
     const r = navigator.onLine ? await flushQueue().catch(() => null) : null;
     setBusy(false);
-    onSaved(r && r.sent > 0 ? "انبعتت الزيارة." : "انحفظت الزيارة بالجوال، وبتنبعت لحالها لما يرجع النت.");
+    onSaved(r && r.sent > 0 ? "تم إرسال الزيارة." : "تم حفظ الزيارة على الجهاز، وسيتم إرسالها تلقائياً عند عودة الاتصال.");
   }
 
   return (
@@ -165,7 +165,7 @@ function VisitFields({ onSaved, online }: { onSaved: (t: string) => void; online
       <div className="card card-pad grid">
         <h2>التقرير</h2>
         <div className="field">
-          <label htmlFor="m-tests">الفحوصات اللي تمت</label>
+          <label htmlFor="m-tests">الفحوصات المُنجزة</label>
           <textarea id="m-tests" className="input" rows={3} value={tests} onChange={(e) => setTests(e.target.value)} />
         </div>
         <div className="field">
@@ -209,7 +209,7 @@ function VisitFields({ onSaved, online }: { onSaved: (t: string) => void; online
         {boot.ambassadors.filter((a) => a.id !== boot.me.id).length > 0 && (
           <div className="field">
             <span className="small" style={{ fontWeight: 600 }}>
-              المرافقين
+              المرافقون
             </span>
             <div className="actions">
               {boot.ambassadors
@@ -234,7 +234,7 @@ function VisitFields({ onSaved, online }: { onSaved: (t: string) => void; online
 
       <div className="m-sticky-save">
         <button className="btn btn-green btn-block" type="submit" disabled={busy}>
-          {busy ? "عم نحفظ…" : "حفظ الزيارة"}
+          {busy ? "جارٍ الحفظ…" : "حفظ الزيارة"}
         </button>
       </div>
     </form>

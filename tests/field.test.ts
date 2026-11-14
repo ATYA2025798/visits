@@ -42,7 +42,7 @@ describe("الصور", () => {
     const big =
       "data:image/jpeg;base64," +
       Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), Buffer.alloc(2_200_000)]).toString("base64");
-    expect(() => decodeImage(big)).toThrow("كبيرة");
+    expect(() => decodeImage(big)).toThrow("كبير جداً");
   });
 });
 
@@ -71,7 +71,7 @@ describe("المزامنة من الجوال (المهمة 17)", () => {
       payload: {
         lineCode: "G-7872-002",
         recommendationId: fine,
-        result: "تمام",
+        result: "تم",
         gps: { lat: 31.5, lng: 34.46, accuracy: 12.5 },
         photos: [JPEG, PNG],
         mikrotik: [

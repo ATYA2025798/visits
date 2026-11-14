@@ -44,7 +44,7 @@ test("زيارة فيها موقع بتطلع دبوس على الخريطة، �
   const panel = boss.getByRole("complementary", { name: "تفاصيل الخط" });
   await expect(panel).toContainText("G-7777-001");
   await expect(panel).toContainText("يوجد تجاوز");
-  await expect(panel.getByRole("link", { name: "كل تاريخ الخط" })).toBeVisible();
+  await expect(panel.getByRole("link", { name: "السجل الكامل للخط" })).toBeVisible();
 
   // فلتر التوصية بيخفي الدبوس
   const fine = boot.recommendations.find((r: { label: string }) => r.label === "لا يوجد تجاوز").id;

@@ -19,10 +19,10 @@ test("السفير بيرفع ملف الشهر: معاينة، حفظ، وال�
   await expect(page.locator(".stat").filter({ hasText: "خطوط جديدة" })).toContainText("4");
   await expect(page.getByRole("cell", { name: "الزيارات الإجماليه" }).first()).toBeVisible();
   await expect(page.getByText("سجل الإدارة").first()).toBeVisible();
-  await expect(page.getByText("بدون Line Code صالح")).toBeVisible();
+  await expect(page.getByText("دون Line Code صالح")).toBeVisible();
 
   await page.getByRole("button", { name: "حفظ ملف شهر 2026-11" }).click();
-  await expect(page.getByRole("status")).toContainText("انحفظ ملف شهر 2026-11");
+  await expect(page.getByRole("status")).toContainText("تم حفظ ملف شهر 2026-11");
   await expect(page.locator("table").last()).toContainText("visits-11.xlsx");
 
   await page.goto("/admin/lines?q=G-1000-001");
@@ -36,7 +36,7 @@ test("السفير بيرفع ملف الشهر: معاينة، حفظ، وال�
   await page.getByLabel("اسم الحساب", { exact: true }).fill("حساب طارئ بالإيميل");
   await page.getByLabel("المكان (Locality)").fill("دير البلح");
   await page.getByRole("button", { name: "إضافة", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("انضاف الخط");
+  await expect(page.getByRole("status")).toContainText("تمت إضافة الخط");
   await page.goto("/admin/lines?filter=manual");
   await expect(page.locator("tbody")).toContainText("حساب طارئ بالإيميل");
   await expect(page.locator("tbody")).toContainText("مضاف يدوياً");

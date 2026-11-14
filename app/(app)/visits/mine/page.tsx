@@ -23,7 +23,7 @@ export default async function MyVisitsPage({
       <div className="page-head">
         <div>
           <h1>زياراتي</h1>
-          <p className="muted">الزيارات اللي سجلتها أنت.</p>
+          <p className="muted">الزيارات التي سجّلتها.</p>
         </div>
         <Link className="btn btn-primary" href="/visits/new">
           زيارة جديدة
@@ -31,7 +31,7 @@ export default async function MyVisitsPage({
       </div>
       <div className="card">
         <VisitFiltersForm values={sp} options={options} showOwner={false} />
-        <VisitTable rows={result.rows} empty="لسا ما سجلت زيارات بهالفلتر." />
+        <VisitTable rows={result.rows} empty="لم تسجّل أي زيارات مطابقة لهذا الفلتر حتى الآن." />
         <Pager page={result.page} pages={result.pages} total={result.total} values={sp} />
       </div>
     </>

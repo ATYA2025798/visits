@@ -1,3 +1,5 @@
+import { visitLabel } from "@/lib/format";
+import { fmtDateTime } from "@/lib/format";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -13,11 +15,6 @@ import type { MikrotikAnswer } from "@/lib/mikrotik";
 
 export const metadata: Metadata = { title: "زيارة" };
 
-const timeFmt = new Intl.DateTimeFormat("ar-PS-u-nu-latn", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "Asia/Hebron",
-});
 
 const FIELD: Record<string, string> = {
   visitedOn: "التاريخ",
@@ -25,8 +22,8 @@ const FIELD: Record<string, string> = {
   accountName: "الحساب",
   specialCase: "حالة خاصة",
   place: "المكان",
-  companions: "المرافقين",
-  companionIds: "المرافقين",
+  companions: "المرافقون",
+  companionIds: "المرافقون",
   tests: "الفحوصات",
   result: "النتيجة",
   recommendation: "التوصية",
@@ -61,8 +58,8 @@ export default async function VisitPage({
       action: true,
       owner: { select: { displayName: true } },
       line: true,
-      revisitOf: { select: { id: true, number: true } },
-      revisits: { select: { id: true, number: true }, where: { deletedAt: null } },
+      revisitOf: { select: { id: true, visitedOn: true } },
+      revisits: { select: { id: true, visitedOn: true }, where: { deletedAt: null } },
       postponements: { include: { by: { select: { displayName: true } } }, orderBy: { createdAt: "desc" } },
       editRequests: { include: { requester: { select: { displayName: true } } }, orderBy: { createdAt: "desc" } },
     },
@@ -90,7 +87,7 @@ export default async function VisitPage({
       <div className="page-head">
         <div>
           <h1>
-            زيارة <span className="ltr">#{v.number}</span>
+            زيارة {v.specialCase ? "حالة خاصة" : <span className="ltr">{v.lineCode}</span>}
           </h1>
           <p className="muted">
             {fmtDay(v.visitedOn)} · {v.owner?.displayName ?? "سفير غير محدد"}
@@ -113,29 +110,29 @@ export default async function VisitPage({
               زيارة جديدة لنفس الخط
             </Link>
           )}
-          {!deleted && can(me, "visits:delete") && <DeleteVisitButton visitId={v.id} number={v.number} />}
+          {!deleted && can(me, "visits:delete") && <DeleteVisitButton visitId={v.id} label={visitLabel(v)} />}
           {deleted && can(me, "visits:delete") && <RestoreVisitButton visitId={v.id} />}
         </div>
       </div>
 
       {sp.saved && (
         <div className="alert alert-ok" role="status" style={{ marginBottom: 16 }}>
-          انحفظ.
+          تم الحفظ.
         </div>
       )}
       {sp.requested && (
         <div className="alert alert-ok" role="status" style={{ marginBottom: 16 }}>
-          انبعت طلب التعديل لصاحب الزيارة.
+          تم إرسال طلب التعديل إلى صاحب الزيارة.
         </div>
       )}
       {sp.warning === "unknown-line" && (
         <div className="alert alert-warn" role="status" style={{ marginBottom: 16 }}>
-          انحفظت الزيارة، بس الخط مش موجود بملف المشتركين. بتنربط لحالها لما يوصل الخط بالملف أو ينضاف يدوياً.
+          تم حفظ الزيارة، لكن الخط غير موجود في ملف المشتركين. وسيتم ربطها تلقائياً عند ورود الخط في الملف أو إضافته يدوياً.
         </div>
       )}
       {deleted && (
         <div className="alert alert-error" style={{ marginBottom: 16 }}>
-          هالزيارة محذوفة (بسلة المحذوفات).
+          هذه الزيارة محذوفة (موجودة في سلة المحذوفات).
         </div>
       )}
 
@@ -190,7 +187,7 @@ export default async function VisitPage({
             </div>
           </dl>
           <div>
-            <div className="small muted">الفحوصات اللي تمت</div>
+            <div className="small muted">الفحوصات المُنجزة</div>
             <p className="prose-box">{v.tests ?? "—"}</p>
           </div>
           <div>
@@ -202,8 +199,8 @@ export default async function VisitPage({
               <dl className="kv">
                 {v.filledAt && (
                   <div>
-                    <dt>وقت التعبئة بالميدان</dt>
-                    <dd>{timeFmt.format(v.filledAt)}</dd>
+                    <dt>وقت التعبئة في الميدان</dt>
+                    <dd>{fmtDateTime(v.filledAt)}</dd>
                   </div>
                 )}
                 <div>
@@ -275,16 +272,16 @@ export default async function VisitPage({
                   <>
                     إعادة زيارة لـ{" "}
                     <Link href={`/visits/${v.revisitOf.id}`} className="ltr">
-                      #{v.revisitOf.number}
+                      {fmtDay(v.revisitOf.visitedOn)}
                     </Link>
                     .{" "}
                   </>
                 )}
                 {v.revisits.map((r) => (
                   <span key={r.id}>
-                    انعملها إعادة زيارة:{" "}
+                    أُجريت لها إعادة زيارة:{" "}
                     <Link href={`/visits/${r.id}`} className="ltr">
-                      #{r.number}
+                      {fmtDay(r.visitedOn)}
                     </Link>{" "}
                   </span>
                 ))}
@@ -298,7 +295,7 @@ export default async function VisitPage({
                     <li key={p.id}>
                       {p.reason}{" "}
                       <span className="muted">
-                        · {p.by.displayName} · {timeFmt.format(p.createdAt)}
+                        · {p.by.displayName} · {fmtDateTime(p.createdAt)}
                       </span>
                     </li>
                   ))}
@@ -335,19 +332,19 @@ export default async function VisitPage({
       <section className="card" style={{ marginTop: 16 }} aria-label="السجل">
         <div className="card-head">
           <h2>السجل</h2>
-          <span className="muted small">كل تعديل على هالزيارة</span>
+          <span className="muted small">جميع التعديلات على هذه الزيارة</span>
         </div>
         {history.length === 0 ? (
-          <div className="empty">ما في تعديلات (زيارة منقولة من الإكسل).</div>
+          <div className="empty">لا توجد تعديلات (زيارة منقولة من الإكسل).</div>
         ) : (
           <div className="table-wrap">
             <table className="table stack">
               <tbody>
                 {history.map((h) => (
                   <tr key={h.id.toString()}>
-                    <td className="cell-main small">{timeFmt.format(h.at)}</td>
-                    <td data-label="مين">{h.actor?.displayName ?? "النظام"}</td>
-                    <td data-label="شو" className="small">
+                    <td className="cell-main small">{fmtDateTime(h.at)}</td>
+                    <td data-label="المستخدم">{h.actor?.displayName ?? "النظام"}</td>
+                    <td data-label="العملية" className="small">
                       {h.action === "CREATE"
                         ? "سجّل الزيارة"
                         : h.action === "DELETE"

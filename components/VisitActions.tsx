@@ -17,7 +17,7 @@ function useAction() {
     setError(null);
     const res = await p;
     setBusy(false);
-    if (!res.ok) return setError(res.error ?? "صار خطأ");
+    if (!res.ok) return setError(res.error ?? "حدث خطأ");
     after?.();
     router.refresh();
   }
@@ -67,7 +67,7 @@ export function StatusEditor({
       )}
       {saved && !dirty && (
         <div className="alert alert-ok" role="status">
-          انحفظت الحالة
+          تم حفظ الحالة
         </div>
       )}
       <div className="form-grid">
@@ -104,14 +104,14 @@ export function StatusEditor({
       </div>
       <div>
         <button className="btn btn-primary" type="submit" disabled={busy || !dirty}>
-          {busy ? "لحظة…" : "حفظ الحالة"}
+          {busy ? "يُرجى الانتظار…" : "حفظ الحالة"}
         </button>
       </div>
     </form>
   );
 }
 
-export function DeleteVisitButton({ visitId, number }: { visitId: string; number: number }) {
+export function DeleteVisitButton({ visitId, label }: { visitId: string; label: string }) {
   const { error, busy, run, router } = useAction();
   return (
     <>
@@ -119,7 +119,7 @@ export function DeleteVisitButton({ visitId, number }: { visitId: string; number
         className="btn btn-danger btn-sm"
         disabled={busy}
         onClick={() => {
-          if (!window.confirm(`حذف الزيارة رقم ${number}؟ بتنتقل لسلة المحذوفات وبترجع منها.`)) return;
+          if (!window.confirm(`هل تريد حذف ${label}؟ ستنتقل إلى سلة المحذوفات ويمكن استرجاعها منها.`)) return;
           void run(sendJson("DELETE", `/api/visits/${visitId}`), () => router.push("/visits?deleted=1"));
         }}
       >

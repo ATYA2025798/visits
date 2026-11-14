@@ -1,3 +1,4 @@
+import { fmtIsoDay, fmtTime } from "@/lib/format";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requirePermission } from "@/lib/session";
@@ -10,7 +11,6 @@ import { CardSiteForm } from "@/components/SiteFieldForms";
 export const metadata: Metadata = { title: "البطاقات" };
 
 const money = (n: number) => `${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₪`;
-const timeFmt = new Intl.DateTimeFormat("ar-PS-u-nu-latn", { timeStyle: "short", timeZone: TIME_ZONE });
 const LINK: Record<string, string> = { VISIT: "زيارة", EXTERNAL: "فحص خارجي", VPN: "حالة VPN", NONE: "—" };
 
 export default async function CardsPage({
@@ -43,7 +43,7 @@ export default async function CardsPage({
       <div className="page-head">
         <div>
           <h1>شراء البطاقات</h1>
-          <p className="muted">ملخص يومي بالعدد والمجموع. اضغط على اليوم لتشوف كل بطاقة.</p>
+          <p className="muted">ملخص يومي بالعدد والمجموع. اضغط على اليوم لعرض تفاصيل البطاقات.</p>
         </div>
         <Link className="btn btn-ghost" href={`/cards/report?${reportQs}`}>
           تقرير الشهر للصرف
@@ -78,12 +78,12 @@ export default async function CardsPage({
           <span className="small muted">{monthly.rows.length} بطاقة</span>
         </div>
         {days.length === 0 ? (
-          <div className="empty">ما في بطاقات بهالشهر.</div>
+          <div className="empty">لا توجد بطاقات في هذا الشهر.</div>
         ) : (
           days.map((d) => (
             <details key={d.day} className="list-row" style={{ display: "block" }} data-day={d.day}>
               <summary style={{ cursor: "pointer", display: "flex", justifyContent: "space-between" }}>
-                <b className="ltr">{d.day}</b>
+                <b className="ltr">{fmtIsoDay(d.day)}</b>
                 <span>
                   {d.count} بطاقة · <b className="ltr">{money(d.total)}</b>
                 </span>
@@ -92,7 +92,7 @@ export default async function CardsPage({
                 <tbody>
                   {(byDay.get(d.day) ?? []).map((c) => (
                     <tr key={c.id}>
-                      <td className="small muted">{timeFmt.format(c.filledAt)}</td>
+                      <td className="small muted">{fmtTime(c.filledAt)}</td>
                       <td>{c.name}</td>
                       <td className="ltr small">{c.ip ?? ""}</td>
                       <td className="small">{LINK[c.linkKind]}</td>

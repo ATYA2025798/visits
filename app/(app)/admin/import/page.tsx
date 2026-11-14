@@ -1,3 +1,4 @@
+import { fmtDateTime } from "@/lib/format";
 import type { Metadata } from "next";
 import { requirePermission } from "@/lib/session";
 import { can } from "@/lib/authz";
@@ -6,7 +7,6 @@ import { ImportFlow } from "./ImportFlow";
 
 export const metadata: Metadata = { title: "ملف الشهر" };
 
-const fmt = new Intl.DateTimeFormat("ar-PS-u-nu-latn", { dateStyle: "medium", timeStyle: "short" });
 
 type Stats = {
   newLines: number;
@@ -32,8 +32,7 @@ export default async function ImportPage() {
         <div>
           <h1>ملف الشهر</h1>
           <p className="muted">
-            ارفع ملف الزيارات اللي بيبعته المسؤول. بتشوف معاينة كاملة قبل الحفظ، والخطوط ما بتنمسح: الخط الغائب عن الملف
-            بيتعلّم بس.
+            ارفع ملف الزيارات الذي يرسله المسؤول. ستظهر معاينة كاملة قبل الحفظ، ولا تُحذف الخطوط؛ إذ يُعلَّم الخط غير الموجود في الملف فقط.
           </p>
         </div>
       </div>
@@ -42,10 +41,10 @@ export default async function ImportPage() {
 
       <div className="card">
         <div className="card-head">
-          <h2>الملفات اللي انرفعت</h2>
+          <h2>الملفات المرفوعة</h2>
         </div>
         {history.length === 0 ? (
-          <div className="empty">لسا ما انرفع ولا ملف.</div>
+          <div className="empty">لم يُرفع أي ملف حتى الآن.</div>
         ) : (
           <div className="table-wrap">
             <table className="table stack">
@@ -53,7 +52,7 @@ export default async function ImportPage() {
                 <tr>
                   <th>الشهر</th>
                   <th>الملف</th>
-                  <th>مين ومتى</th>
+                  <th>بواسطة وتاريخ الرفع</th>
                   <th>النتيجة</th>
                 </tr>
               </thead>
@@ -68,8 +67,8 @@ export default async function ImportPage() {
                       <td data-label="الملف" className="small">
                         <bdi>{h.fileName}</bdi>
                       </td>
-                      <td data-label="مين ومتى" className="small muted">
-                        {names.get(h.importedById) ?? "—"} · {fmt.format(h.createdAt)}
+                      <td data-label="بواسطة وتاريخ الرفع" className="small muted">
+                        {names.get(h.importedById) ?? "—"} · {fmtDateTime(h.createdAt)}
                       </td>
                       <td data-label="النتيجة" className="small">
                         {s.newLines} جديد · {s.changedLines} تغيّر · {s.targets} زيارة للشهر · {s.logRows} بسجل الإدارة

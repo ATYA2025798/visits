@@ -12,9 +12,9 @@ import { verifyPassword } from "./password";
 import { displayLineCode, isValidLineCode, normalizeLineCode } from "./line-code";
 
 export const credentialSchema = z.object({
-  lineCode: z.string().refine(isValidLineCode, "الـ Line Code مش صالح"),
-  username: z.string().trim().min(1, "اكتب اسم المستخدم").max(100),
-  password: z.string().min(1, "اكتب كلمة السر").max(200),
+  lineCode: z.string().refine(isValidLineCode, "قيمة Line Code غير صالحة"),
+  username: z.string().trim().min(1, "أدخل اسم المستخدم").max(100),
+  password: z.string().min(1, "أدخل كلمة السر").max(200),
 });
 
 export async function saveCredential(actor: Actor, raw: z.input<typeof credentialSchema>, db: Db = defaultPrisma) {
@@ -53,7 +53,7 @@ export async function revealCredential(
   if (!can(actor, "mikrotik:reveal")) throw forbidden();
   const user = await db.user.findUnique({ where: { id: actor.id } });
   if (!user || !(await verifyPassword(user.passwordHash, accountPassword))) {
-    throw new ApiError(403, "كلمة سر حسابك غلط");
+    throw new ApiError(403, "كلمة سر حسابك غير صحيحة");
   }
   const cred = await db.mikrotikCredential.findUnique({ where: { id: credentialId } });
   if (!cred) throw notFound();

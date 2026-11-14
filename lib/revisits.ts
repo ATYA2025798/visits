@@ -63,7 +63,7 @@ export async function openRevisitFor(tx: Tx, lineCodeKey: string | null): Promis
   return first?.id ?? null;
 }
 
-export const postponeSchema = z.object({ reason: z.string().trim().min(2, "اكتب سبب التأجيل").max(300) });
+export const postponeSchema = z.object({ reason: z.string().trim().min(2, "أدخل سبب التأجيل").max(300) });
 
 export async function postponeRevisit(actor: Actor, visitId: string, reason: string, db: Db = defaultPrisma) {
   if (!can(actor, "visits:editStatus")) throw forbidden();
@@ -74,7 +74,7 @@ export async function postponeRevisit(actor: Actor, visitId: string, reason: str
       const v = await tx.visit.findUnique({ where: { id: visitId } });
       if (!v || v.deletedAt) throw notFound();
       const open = await openRevisits({ lineCodeKey: v.lineCodeKey ?? undefined }, tx);
-      if (!open.some((o) => o.id === v.id)) throw new ApiError(409, "الزيارة مش بقائمة إعادة الزيارة");
+      if (!open.some((o) => o.id === v.id)) throw new ApiError(409, "الزيارة غير موجودة في قائمة إعادة الزيارة");
       const p = await tx.revisitPostponement.create({ data: { visitId, reason: input.reason, byId: actor.id } });
       audit.event("UPDATE", "Visit", visitId, `تأجيل إعادة الزيارة: ${input.reason}`);
       return p;

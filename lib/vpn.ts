@@ -17,11 +17,11 @@ const text = (max: number) =>
     .transform((v) => (v ? v : null));
 
 export const vpnSchema = z.object({
-  networkName: z.string().trim().min(1, "اكتب اسم الشبكة").max(200),
+  networkName: z.string().trim().min(1, "أدخل اسم الشبكة").max(200),
   ip: z
     .string()
     .trim()
-    .refine((v) => isIP(v) !== 0, "الـ IP مش صحيح"),
+    .refine((v) => isIP(v) !== 0, "عنوان IP غير صحيح"),
   placeText: text(300),
   suspects: text(2000),
   notes: text(2000),

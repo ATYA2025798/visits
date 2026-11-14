@@ -10,7 +10,7 @@ import { ApiError } from "./errors";
 function key(): Buffer {
   const raw = process.env.MIKROTIK_KEY;
   const k = raw ? Buffer.from(raw, "base64") : null;
-  if (!k || k.length !== 32) throw new ApiError(500, "مفتاح التشفير MIKROTIK_KEY مش مضبوط على السيرفر");
+  if (!k || k.length !== 32) throw new ApiError(500, "مفتاح التشفير MIKROTIK_KEY غير مُعدّ على الخادم");
   return k;
 }
 

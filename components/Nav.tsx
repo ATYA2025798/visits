@@ -8,14 +8,14 @@ type Item = { href: string; label: string; soon?: boolean; count?: number; exact
 // الصفحات اللي جاية بالمراحل الجاية بتظهر «قريباً» عشان الشكل العام يبيّن من هلأ
 const MAIN: Item[] = [
   { href: "/", label: "الرئيسية" },
-  { href: "/search", label: "البحث بالـ Line Code" },
+  { href: "/search", label: "البحث باستخدام Line Code" },
   { href: "/visits", label: "الزيارات", exact: true },
   { href: "/visits/mine", label: "زياراتي" },
   { href: "/revisits", label: "إعادة الزيارة" },
   { href: "/map", label: "الخريطة" },
   { href: "/vpn", label: "حالات VPN" },
   { href: "/cards", label: "البطاقات" },
-  { href: "/mikrotik/access", label: "بحاجة access" },
+  { href: "/mikrotik/access", label: "بحاجة إلى صلاحية access" },
 ];
 
 // للسفراء بس

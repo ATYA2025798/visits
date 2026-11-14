@@ -28,7 +28,7 @@ export function ManualLineForm() {
     if (!res.ok) return setError(res.error);
     formEl.reset();
     setOpen(false);
-    setDone(`انضاف الخط ${res.data.line.code}`);
+    setDone(`تمت إضافة الخط ${res.data.line.code}`);
     router.refresh();
   }
 
@@ -58,7 +58,7 @@ export function ManualLineForm() {
       <form onSubmit={onSubmit} className="grid">
         <h2>إضافة خط طارئ</h2>
         <p className="muted small" style={{ margin: 0 }}>
-          للخط اللي وصلك بإيميل قبل ملف الشهر الجاي. بينعلّم «مضاف يدوياً»، ولما يوصل بالملف بتتحدّث بياناته.
+          للخط الذي يصل عبر البريد الإلكتروني قبل ملف الشهر القادم. يُعلَّم بـ«مضاف يدوياً»، وتُحدَّث بياناته عند وروده في الملف.
         </p>
         {error && (
           <div className="alert alert-error" role="alert">
@@ -89,7 +89,7 @@ export function ManualLineForm() {
         </div>
         <div className="actions">
           <button className="btn btn-primary" type="submit" disabled={busy}>
-            {busy ? "لحظة…" : "إضافة"}
+            {busy ? "يُرجى الانتظار…" : "إضافة"}
           </button>
           <button className="btn btn-ghost" type="button" onClick={() => setOpen(false)}>
             إلغاء

@@ -1,17 +1,12 @@
 /** قطع مشتركة لعرض الزيارات (بتشتغل على السيرفر) */
 import Link from "next/link";
+import { fmtDate } from "@/lib/format";
 import { REGIONS } from "@/lib/line-code";
 import type { FormOptions } from "@/lib/form-options";
 
-const dayFmt = new Intl.DateTimeFormat("ar-PS-u-nu-latn", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: "UTC",
-});
-
+/** تاريخ الزيارة: 11-9-2026 */
 export function fmtDay(d: Date | null | undefined) {
-  return d ? dayFmt.format(d) : "—";
+  return fmtDate(d);
 }
 
 export function RecBadge({ label, color }: { label?: string | null; color?: string | null }) {
@@ -39,7 +34,7 @@ export interface VisitRow {
 
 export function VisitTable({
   rows,
-  empty = "ما في زيارات بهالفلتر.",
+  empty = "لا توجد زيارات مطابقة لهذا الفلتر.",
   showRegion = true,
   selectForm,
 }: {
@@ -60,9 +55,8 @@ export function VisitTable({
                 <span className="sr-only">اختيار</span>
               </th>
             )}
-            <th>رقم</th>
-            <th>التاريخ</th>
             <th>الخط</th>
+            <th>التاريخ</th>
             {showRegion && <th>المنطقة</th>}
             <th>السفير</th>
             <th>التوصية</th>
@@ -71,7 +65,7 @@ export function VisitTable({
         </thead>
         <tbody>
           {rows.map((v) => (
-            <tr key={v.id} data-visit={v.number}>
+            <tr key={v.id} data-visit={v.id}>
               {selectForm && (
                 <td className="cell-select">
                   <input
@@ -79,25 +73,21 @@ export function VisitTable({
                     name="ids"
                     value={v.id}
                     form={selectForm}
-                    aria-label={`اختيار الزيارة ${v.number}`}
+                    aria-label={`اختيار زيارة ${v.specialCase ? "حالة خاصة" : v.lineCode} بتاريخ ${fmtDay(v.visitedOn)}`}
                   />
                 </td>
               )}
               <td className="cell-main">
+                {/* الزيارة بتنعرف بالـ Line Code والتاريخ، مش برقم */}
                 <Link href={`/visits/${v.id}`}>
-                  <b className="ltr">#{v.number}</b>
+                  {v.specialCase ? <b>حالة خاصة</b> : <b className="ltr">{v.lineCode}</b>}
                 </Link>{" "}
                 <span className="muted small">{v.accountName ?? ""}</span>
               </td>
               <td data-label="التاريخ" className="small">
-                {fmtDay(v.visitedOn)}
-              </td>
-              <td data-label="الخط">
-                {v.specialCase ? (
-                  <span className="badge badge-warn">حالة خاصة</span>
-                ) : (
-                  <span className="ltr">{v.lineCode}</span>
-                )}
+                <Link href={`/visits/${v.id}`} className="ltr">
+                  {fmtDay(v.visitedOn)}
+                </Link>
               </td>
               {showRegion && (
                 <td data-label="المنطقة" className="small">
@@ -141,14 +131,14 @@ export function VisitFiltersForm({
         <label className="sr-only" htmlFor="f-q">
           بحث
         </label>
-        <input id="f-q" name="q" className="input" defaultValue={values.q} placeholder="بحث: كود، حساب، أو رقم زيارة" />
+        <input id="f-q" name="q" className="input" defaultValue={values.q} placeholder="بحث: Line Code أو اسم الحساب" />
         <button className="btn btn-primary" type="submit">
           عرض
         </button>
       </div>
       <details open={more}>
         <summary className="small" style={{ cursor: "pointer", fontWeight: 600, color: "var(--blue)" }}>
-          فلاتر أكتر
+          فلاتر إضافية
         </summary>
         <div className="form-grid" style={{ marginTop: 12 }}>
           <div className="field">
@@ -156,7 +146,7 @@ export function VisitFiltersForm({
             <input id="f-from" name="from" type="date" className="input" defaultValue={values.from} />
           </div>
           <div className="field">
-            <label htmlFor="f-to">لتاريخ</label>
+            <label htmlFor="f-to">إلى تاريخ</label>
             <input id="f-to" name="to" type="date" className="input" defaultValue={values.to} />
           </div>
           {showOwner && (
@@ -214,8 +204,8 @@ export function VisitFiltersForm({
             <label htmlFor="f-special">النوع</label>
             <select id="f-special" name="special" className="select" defaultValue={values.special ?? ""}>
               <option value="">الكل</option>
-              <option value="1">حالات خاصة بس</option>
-              <option value="0">بـ Line Code بس</option>
+              <option value="1">الحالات الخاصة فقط</option>
+              <option value="0">ذات Line Code فقط</option>
             </select>
           </div>
           <div className="actions">

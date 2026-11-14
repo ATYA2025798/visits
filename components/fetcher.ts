@@ -11,7 +11,7 @@ export async function sendJson<T>(method: string, url: string, body?: unknown): 
       credentials: "same-origin",
     });
   } catch {
-    return { ok: false, status: 0, error: "ما في اتصال بالسيرفر. تأكد من النت وجرّب كمان مرة." };
+    return { ok: false, status: 0, error: "تعذّر الاتصال بالخادم. يُرجى التحقق من الاتصال بالإنترنت والمحاولة مرة أخرى." };
   }
   const data = await res.json().catch(() => ({}));
   if (res.ok) return { ok: true, data: data as T };
@@ -20,7 +20,7 @@ export async function sendJson<T>(method: string, url: string, body?: unknown): 
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.assign("/login");
   }
-  return { ok: false, status: res.status, error: (data as { error?: string }).error ?? "صار خطأ، جرّب كمان مرة" };
+  return { ok: false, status: res.status, error: (data as { error?: string }).error ?? "حدث خطأ، يُرجى المحاولة مرة أخرى" };
 }
 
 export const postJson = <T>(url: string, body?: unknown) => sendJson<T>("POST", url, body ?? {});

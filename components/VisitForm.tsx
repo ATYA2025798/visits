@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { patchJson, postJson } from "./fetcher";
+import { fmtIsoDay } from "@/lib/format";
 
 type Option = { id: string; label: string; color?: string | null };
 type Person = { id: string; displayName: string };
@@ -59,12 +60,12 @@ export function VisitForm({
     try {
       const res = await fetch(`/api/lines/lookup?code=${encodeURIComponent(v.lineCode)}`);
       const d = await res.json();
-      if (!d.valid) return setLookup({ text: "الكود مش صالح", tone: "warn" });
+      if (!d.valid) return setLookup({ text: "الكود غير صالح", tone: "warn" });
       if (!d.line)
-        return setLookup({ text: "الخط مش موجود بملف المشتركين. بتقدر تحفظ عادي واكتب اسم الحساب.", tone: "warn" });
+        return setLookup({ text: "الخط غير موجود في ملف المشتركين. يمكنك الحفظ بشكل اعتيادي مع إدخال اسم الحساب.", tone: "warn" });
       if (!v.accountName && d.line.accountName) set("accountName", d.line.accountName);
       setLookup({
-        text: `${d.line.accountName ?? ""}${d.line.region ? ` · ${d.line.region}` : ""}${d.openRevisit ? ` · بانتظار إعادة زيارة (#${d.openRevisit.number})` : ""}`,
+        text: `${d.line.accountName ?? ""}${d.line.region ? ` · ${d.line.region}` : ""}${d.openRevisit ? ` · بانتظار إعادة زيارة للزيارة المؤرخة ${fmtIsoDay(d.openRevisit.visitedOn)}` : ""}`,
         tone: "ok",
       });
     } catch {
@@ -115,7 +116,7 @@ export function VisitForm({
     const changes = changedFields();
     if (!Object.keys(changes).length) {
       setBusy(false);
-      return setError("ما غيّرت شي");
+      return setError("لم يتم إجراء أي تغيير");
     }
     res =
       mode === "edit"
@@ -169,7 +170,7 @@ export function VisitForm({
               value={v.accountName}
               onChange={(e) => set("accountName", e.target.value)}
             />
-            {!v.specialCase && <span className="hint">بينعبّى لحاله من ملف المشتركين</span>}
+            {!v.specialCase && <span className="hint">يُعبَّأ تلقائياً من ملف المشتركين</span>}
           </div>
           {v.specialCase && (
             <div className="field">
@@ -193,7 +194,7 @@ export function VisitForm({
         {others.length > 0 && (
           <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
             <legend className="small" style={{ fontWeight: 600, marginBottom: 6 }}>
-              المرافقين (اختياري)
+              المرافقون (اختياري)
             </legend>
             <div className="actions">
               {others.map((a) => (
@@ -219,7 +220,7 @@ export function VisitForm({
       <div className="card card-pad grid">
         <h2>التقرير</h2>
         <div className="field">
-          <label htmlFor="tests">الفحوصات اللي تمت</label>
+          <label htmlFor="tests">الفحوصات المُنجزة</label>
           <textarea
             id="tests"
             className="input"
@@ -253,7 +254,7 @@ export function VisitForm({
                 onChange={(e) => setRec(e.target.value)}
                 required
               >
-                <option value="">— اختار —</option>
+                <option value="">— اختر —</option>
                 {recommendations.map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.label}
@@ -285,7 +286,7 @@ export function VisitForm({
       {mode === "request" && (
         <div className="card card-pad grid">
           <div className="alert alert-warn">
-            هاد تقرير سفير تاني. التعديل بيوصله كطلب، وبيشوف القديم والجديد جنب بعض قبل ما يوافق.
+            هذا التقرير يخص سفيراً آخر. سيصله التعديل على شكل طلب، ويطّلع على النسختين القديمة والجديدة جنباً إلى جنب قبل الموافقة.
           </div>
           <div className="field">
             <label htmlFor="reason">سبب التعديل</label>
@@ -296,7 +297,7 @@ export function VisitForm({
 
       <div className="actions">
         <button className="btn btn-primary" type="submit" disabled={busy}>
-          {busy ? "لحظة…" : mode === "create" ? "حفظ الزيارة" : mode === "edit" ? "حفظ التعديل" : "إرسال طلب التعديل"}
+          {busy ? "يُرجى الانتظار…" : mode === "create" ? "حفظ الزيارة" : mode === "edit" ? "حفظ التعديل" : "إرسال طلب التعديل"}
         </button>
         <button className="btn btn-ghost" type="button" onClick={() => router.back()}>
           إلغاء

@@ -1,6 +1,6 @@
 /* Service Worker لتطبيق الميدان: بيخلي صفحات /m تفتح بدون نت، وبيبعت الطابور بالخلفية إذا الجوال بيدعم.
    كل ما يتغير هالملف، غيّر VERSION عشان النسخة القديمة تتمسح. */
-const VERSION = "v1";
+const VERSION = "v2";
 const STATIC = `av-static-${VERSION}`;
 const PAGES = `av-pages-${VERSION}`;
 const FIELD_PAGES = ["/m", "/m/visit", "/m/vpn", "/m/card"];
@@ -72,7 +72,7 @@ self.addEventListener("fetch", (event) => {
           return (
             (await cache.match(url.pathname)) ||
             (await cache.match("/m")) ||
-            new Response("بدون نت، وما في نسخة محفوظة. افتح التطبيق مرة مع نت.", {
+            new Response("لا يوجد اتصال بالإنترنت، ولا توجد نسخة محفوظة من هذه الصفحة. يُرجى فتح التطبيق مرة واحدة أثناء الاتصال.", {
               status: 503,
               headers: { "Content-Type": "text/plain; charset=utf-8" },
             })

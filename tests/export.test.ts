@@ -58,7 +58,7 @@ describe("تصدير الزيارات (المهمة 25)", () => {
     expect(out[0]).toEqual(VISIT_COLUMNS.map((col) => col.header));
     // الأعمدة القديمة بنفس ترتيب الإكسل الحالي أول
     expect(VISIT_COLUMNS.slice(0, 9).map((col) => col.header)).toEqual([
-      "م.",
+      "م",
       "التاريخ",
       "الحساب",
       "الكود",
@@ -70,7 +70,7 @@ describe("تصدير الزيارات (المهمة 25)", () => {
     ]);
     const row = Object.fromEntries(VISIT_COLUMNS.map((col, i) => [col.header, out[1][i]]));
     expect(row).toMatchObject({
-      "م.": a.number,
+      م: 1,
       الحساب: "محل التصدير",
       الكود: "G-1234-001",
       الفحوصات: "فحص",
@@ -78,7 +78,7 @@ describe("تصدير الزيارات (المهمة 25)", () => {
       التوصية: "يوجد تجاوز",
       الإجراء: "تم تصويب الوضع",
       السفير: "ali",
-      المرافقين: "sami",
+      المرافقون: "sami",
       المنطقة: "غزة",
       الموقع: "31.50000, 34.45000",
     });

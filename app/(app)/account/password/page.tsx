@@ -11,12 +11,12 @@ export default async function PasswordPage() {
       <div className="page-head">
         <div>
           <h1>تغيير كلمة السر</h1>
-          <p className="muted">بعد التغيير بتطلع من كل الأجهزة التانية، وبتضل داخل هون.</p>
+          <p className="muted">بعد التغيير سيتم تسجيل خروجك من جميع الأجهزة الأخرى، مع بقائك مسجلاً على هذا الجهاز.</p>
         </div>
       </div>
       {user.mustChangePassword && (
         <div className="alert alert-warn" role="alert" style={{ marginBottom: 16, maxWidth: 520 }}>
-          المسؤول أعطاك كلمة سر مؤقتة. اختار كلمة سر جديدة عشان تكمّل.
+          أصدر لك المسؤول كلمة سر مؤقتة. يُرجى اختيار كلمة سر جديدة للمتابعة.
         </div>
       )}
       <div className="card card-pad" style={{ maxWidth: 520 }}>

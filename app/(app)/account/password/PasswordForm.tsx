@@ -14,7 +14,7 @@ export function PasswordForm() {
     const formEl = e.currentTarget;
     const form = new FormData(formEl);
     if (form.get("newPassword") !== form.get("confirm")) {
-      setError("كلمتين السر الجداد مش متطابقات");
+      setError("كلمتا السر الجديدتان غير متطابقتين");
       return;
     }
     setBusy(true);
@@ -33,10 +33,10 @@ export function PasswordForm() {
     return (
       <div className="grid">
         <div className="alert alert-ok" role="status">
-          تغيّرت كلمة السر.
+          تم تغيير كلمة السر.
         </div>
         <Link className="btn btn-primary" href="/">
-          للرئيسية
+          العودة إلى الرئيسية
         </Link>
       </div>
     );
@@ -89,7 +89,7 @@ export function PasswordForm() {
       </div>
       <div>
         <button className="btn btn-primary" type="submit" disabled={busy}>
-          {busy ? "لحظة…" : "حفظ"}
+          {busy ? "يُرجى الانتظار…" : "حفظ"}
         </button>
       </div>
     </form>

@@ -14,6 +14,6 @@ export const GET = handler(async (req) => {
   return NextResponse.json({
     valid: true,
     line: line && { code: line.code, accountName: line.accountName, region: line.region, speed: line.speed },
-    openRevisit: open[0] ? { id: open[0].id, number: open[0].number } : null,
+    openRevisit: open[0] ? { id: open[0].id, visitedOn: open[0].visitedOn } : null,
   });
 });

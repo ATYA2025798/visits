@@ -1,5 +1,6 @@
 "use client";
 
+import { fmtDateTime } from "@/lib/format";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { patchJson, postJson } from "@/components/fetcher";
@@ -19,7 +20,6 @@ export interface UserRow {
   lastSeenAt: string | null;
 }
 
-const dateFmt = new Intl.DateTimeFormat("ar-PS-u-nu-latn", { dateStyle: "medium", timeStyle: "short" });
 
 type Dialog =
   | { kind: "add" }
@@ -57,16 +57,16 @@ export function UsersManager({
   function confirmToggle(u: UserRow) {
     setDialog({
       kind: "confirm",
-      title: u.active ? `إيقاف حساب ${u.displayName}؟` : `تفعيل حساب ${u.displayName}؟`,
+      title: u.active ? `هل تريد إيقاف حساب ${u.displayName}؟` : `هل تريد تفعيل حساب ${u.displayName}؟`,
       body: u.active
-        ? "بيطلع فوراً من كل الأجهزة، وما بيقدر يدخل لحد ما ترجع تفعّله. زياراته وسجله بيضلوا زي ما هم."
-        : "بيقدر يدخل من جديد بكلمة سره.",
+        ? "سيتم تسجيل خروجه فوراً من جميع الأجهزة، ولن يتمكن من الدخول حتى يُعاد تفعيل حسابه. وتبقى زياراته وسجله كما هي."
+        : "سيتمكن من الدخول مجدداً بكلمة السر الخاصة به.",
       danger: u.active,
       cta: u.active ? "إيقاف" : "تفعيل",
       action: async () => {
         const res = await patchJson(`/api/users/${u.id}`, { active: !u.active });
         if (!res.ok) return res.error;
-        done(u.active ? `انوقف حساب ${u.displayName}` : `تفعّل حساب ${u.displayName}`);
+        done(u.active ? `تم إيقاف حساب ${u.displayName}` : `تم تفعيل حساب ${u.displayName}`);
         return null;
       },
     });
@@ -75,14 +75,14 @@ export function UsersManager({
   function confirmRevoke(u: UserRow) {
     setDialog({
       kind: "confirm",
-      title: `طرد ${u.displayName} من كل الأجهزة؟`,
-      body: "للجوال الضايع: كل الجلسات بتنلغي فوراً، وبيقدر يدخل من جديد بكلمة سره. إذا خايف حدا بيعرف كلمة السر، استعمل «كلمة سر مؤقتة» بدالها.",
+      title: `هل تريد تسجيل خروج ${u.displayName} من جميع الأجهزة؟`,
+      body: "في حال فقدان الجهاز: تُلغى جميع الجلسات فوراً، ويمكنه الدخول مجدداً بكلمة السر الخاصة به. وإذا كان هناك احتمال أن يعرف غيره كلمة السر، فيُرجى استخدام «كلمة سر مؤقتة» بدلاً من ذلك.",
       danger: true,
-      cta: "طرد من كل الأجهزة",
+      cta: "تسجيل الخروج من جميع الأجهزة",
       action: async () => {
         const res = await postJson<{ revoked: number }>(`/api/users/${u.id}/revoke-sessions`);
         if (!res.ok) return res.error;
-        done(`انلغت ${res.data.revoked} جلسة لـ ${u.displayName}`);
+        done(`تم إلغاء ${res.data.revoked} جلسة للمستخدم ${u.displayName}`);
         return null;
       },
     });
@@ -91,9 +91,9 @@ export function UsersManager({
   function confirmReset(u: UserRow) {
     setDialog({
       kind: "confirm",
-      title: `كلمة سر مؤقتة لـ ${u.displayName}؟`,
-      body: "كلمة السر الحالية بتبطل تشتغل، وبيطلع من كل الأجهزة. أول ما يدخل بالمؤقتة لازم يختار كلمة سر جديدة.",
-      cta: "أعطيه كلمة سر مؤقتة",
+      title: `هل تريد إصدار كلمة سر مؤقتة للمستخدم ${u.displayName}؟`,
+      body: "ستتوقف كلمة السر الحالية عن العمل، وسيتم تسجيل خروجه من جميع الأجهزة. وعند دخوله بكلمة السر المؤقتة يجب عليه اختيار كلمة سر جديدة.",
+      cta: "إصدار كلمة سر مؤقتة",
       action: async () => {
         const res = await postJson<{ tempPassword: string }>(`/api/users/${u.id}/reset-password`);
         if (!res.ok) return res.error;
@@ -166,7 +166,7 @@ export function UsersManager({
                       ) : u.locked ? (
                         <span
                           className="badge badge-red"
-                          title={u.lockedUntil ? dateFmt.format(new Date(u.lockedUntil)) : undefined}
+                          title={u.lockedUntil ? fmtDateTime(new Date(u.lockedUntil)) : undefined}
                         >
                           مقفل مؤقتاً
                         </span>
@@ -177,7 +177,7 @@ export function UsersManager({
                       )}
                     </td>
                     <td data-label="آخر نشاط" className="small muted">
-                      {u.lastSeenAt ? dateFmt.format(new Date(u.lastSeenAt)) : "—"}
+                      {u.lastSeenAt ? fmtDateTime(new Date(u.lastSeenAt)) : "—"}
                       {u.sessionCount > 1 && <div>{u.sessionCount} أجهزة</div>}
                     </td>
                     {canManage && (
@@ -193,7 +193,7 @@ export function UsersManager({
                               </button>
                               {u.sessionCount > 0 && (
                                 <button className="btn btn-ghost btn-sm" onClick={() => confirmRevoke(u)}>
-                                  طرد من كل الأجهزة
+                                  تسجيل الخروج من جميع الأجهزة
                                 </button>
                               )}
                               <button
@@ -220,7 +220,7 @@ export function UsersManager({
           onClose={close}
           onSaved={(u, password) => {
             router.refresh();
-            setNotice({ ok: true, text: `انضاف ${u.displayName}` });
+            setNotice({ ok: true, text: `تمت إضافة ${u.displayName}` });
             setDialog({ kind: "password", user: u, password, isNew: true });
           }}
         />
@@ -232,7 +232,7 @@ export function UsersManager({
           onClose={close}
           onSaved={(u) => {
             close();
-            done(`انحفظت بيانات ${u.displayName}`);
+            done(`تم حفظ بيانات ${u.displayName}`);
           }}
         />
       )}
@@ -335,26 +335,26 @@ function UserFormDialog({
                 spellCheck={false}
                 required
               />
-              <span className="hint">بالإنجليزي، متل ahmad.s — ما بيتغيّر بعدين</span>
+              <span className="hint">بالأحرف الإنجليزية، مثل ahmad.s — ولا يمكن تغييره لاحقاً</span>
             </div>
           )}
           <div className="field">
             <label htmlFor="role">الدور</label>
             <select id="role" name="role" className="select" defaultValue={user?.role ?? "AMBASSADOR"} disabled={isMe}>
-              <option value="AMBASSADOR">سفير — بيعمل كل شي</option>
-              <option value="MANAGER">مسؤول — للقراءة بس</option>
+              <option value="AMBASSADOR">سفير — صلاحيات كاملة</option>
+              <option value="MANAGER">مسؤول — للاطلاع فقط</option>
             </select>
-            {isMe && <span className="hint">ما بتقدر تغيّر دورك أنت.</span>}
+            {isMe && <span className="hint">لا يمكنك تغيير دورك.</span>}
           </div>
           {!editing && (
             <p className="muted small" style={{ margin: 0 }}>
-              النظام بيعطيه كلمة سر مؤقتة بتشوفها بعد الحفظ، وبيغيّرها أول ما يدخل.
+              يُصدر النظام كلمة سر مؤقتة تظهر بعد الحفظ، ويغيّرها المستخدم عند أول دخول.
             </p>
           )}
         </div>
         <div className="modal-foot">
           <button className="btn btn-primary" type="submit" disabled={busy}>
-            {busy ? "لحظة…" : editing ? "حفظ" : "إضافة"}
+            {busy ? "يُرجى الانتظار…" : editing ? "حفظ" : "إضافة"}
           </button>
           <button className="btn btn-ghost" type="button" onClick={onClose}>
             إلغاء
@@ -394,7 +394,7 @@ function ConfirmDialog({ dialog, onClose }: { dialog: Extract<Dialog, { kind: "c
             onClose();
           }}
         >
-          {busy ? "لحظة…" : dialog.cta}
+          {busy ? "يُرجى الانتظار…" : dialog.cta}
         </button>
         <button className="btn btn-ghost" onClick={onClose}>
           إلغاء
@@ -411,7 +411,7 @@ function PasswordDialog({ dialog, onClose }: { dialog: Extract<Dialog, { kind: "
       <div className="modal-body">
         <h2>كلمة السر المؤقتة لـ {dialog.user.displayName}</h2>
         <p className="muted" style={{ margin: 0 }}>
-          ابعتله اسم الدخول وكلمة السر. بتنعرض هالمرة بس، وأول ما يدخل لازم يغيّرها.
+          أرسل إليه اسم الدخول وكلمة السر. تُعرض هذه البيانات مرة واحدة فقط، ويجب عليه تغيير كلمة السر عند أول دخول.
         </p>
         <div className="small muted">
           اسم الدخول: <b className="ltr">{dialog.user.username}</b>
@@ -428,10 +428,10 @@ function PasswordDialog({ dialog, onClose }: { dialog: Extract<Dialog, { kind: "
             setCopied(true);
           }}
         >
-          {copied ? "انسخت" : "نسخ"}
+          {copied ? "تم النسخ" : "نسخ"}
         </button>
         <button className="btn btn-ghost" onClick={onClose}>
-          تمام
+          تم
         </button>
       </div>
     </Modal>

@@ -11,7 +11,7 @@ export default async function BulkPage() {
       <div className="page-head">
         <div>
           <h1>بحث جماعي</h1>
-          <p className="muted">متل ورقة All Visits: لكل كود موجود أو لا، عدد زياراته، وآخر زيارة.</p>
+          <p className="muted">على غرار ورقة All Visits: يُبيَّن لكل كود ما إذا كان موجوداً، وعدد زياراته، وتاريخ آخر زيارة.</p>
         </div>
       </div>
       <BulkSearch />

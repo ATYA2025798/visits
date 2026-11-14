@@ -1,14 +1,14 @@
+import { fmtDateTime } from "@/lib/format";
 import type { Metadata } from "next";
 import { requirePermission } from "@/lib/session";
 import { cardMonthly } from "@/lib/cards";
 import { prisma } from "@/lib/db";
-import { todayLocal, TIME_ZONE } from "@/lib/dates";
+import { todayLocal } from "@/lib/dates";
 import { PrintHeader } from "@/components/print-ui";
 
 export const metadata: Metadata = { title: "تقرير البطاقات الشهري" };
 
 const money = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const dt = new Intl.DateTimeFormat("en-GB", { dateStyle: "short", timeStyle: "short", timeZone: TIME_ZONE });
 const LINK: Record<string, string> = { VISIT: "زيارة", EXTERNAL: "فحص خارجي", VPN: "حالة VPN", NONE: "—" };
 
 /** تقرير آخر الشهر للصرف */
@@ -31,7 +31,7 @@ export default async function PrintCards({ searchParams }: { searchParams: Promi
       <table className="ptable">
         <thead>
           <tr>
-            <th>#</th>
+            <th>م</th>
             <th>الوقت</th>
             <th>البطاقة أو الشبكة</th>
             <th>IP</th>
@@ -44,7 +44,7 @@ export default async function PrintCards({ searchParams }: { searchParams: Promi
           {m.rows.map((c, i) => (
             <tr key={c.id}>
               <td>{i + 1}</td>
-              <td className="ltr">{dt.format(c.filledAt)}</td>
+              <td className="ltr">{fmtDateTime(c.filledAt)}</td>
               <td>{c.name}</td>
               <td className="ltr">{c.ip ?? ""}</td>
               <td>{LINK[c.linkKind]}</td>

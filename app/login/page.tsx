@@ -31,7 +31,7 @@ export default async function LoginPage() {
             <LoginForm />
           </div>
         </div>
-        <p className="auth-foot">كل شخص بيدخل بحسابه الشخصي. نسيت كلمة السر؟ أي سفير بيقدر يعطيك كلمة سر مؤقتة.</p>
+        <p className="auth-foot">يدخل كل مستخدم بحسابه الشخصي. هل نسيت كلمة السر؟ يمكن لأي سفير إصدار كلمة سر مؤقتة لك.</p>
       </div>
     </main>
   );

@@ -1,14 +1,14 @@
+import { fmtDateTime } from "@/lib/format";
 import type { Metadata } from "next";
 import { requirePermission } from "@/lib/session";
 import { cardMonthly } from "@/lib/cards";
 import { prisma } from "@/lib/db";
-import { todayLocal, TIME_ZONE } from "@/lib/dates";
+import { todayLocal } from "@/lib/dates";
 import { PrintButton } from "@/components/PrintButton";
 
 export const metadata: Metadata = { title: "تقرير البطاقات الشهري" };
 
 const money = (n: number) => `${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₪`;
-const dt = new Intl.DateTimeFormat("ar-PS-u-nu-latn", { dateStyle: "short", timeStyle: "short", timeZone: TIME_ZONE });
 
 export default async function CardReport({
   searchParams,
@@ -46,7 +46,7 @@ export default async function CardReport({
         <table className="table">
           <thead>
             <tr>
-              <th>#</th>
+              <th>م</th>
               <th>التاريخ</th>
               <th>البطاقة / الشبكة</th>
               <th>IP</th>
@@ -58,7 +58,7 @@ export default async function CardReport({
             {m.rows.map((r, i) => (
               <tr key={r.id}>
                 <td>{i + 1}</td>
-                <td className="small">{dt.format(r.filledAt)}</td>
+                <td className="small">{fmtDateTime(r.filledAt)}</td>
                 <td>{r.name}</td>
                 <td className="ltr small">{r.ip ?? ""}</td>
                 <td>{r.owner.displayName}</td>
@@ -94,7 +94,7 @@ export default async function CardReport({
           </table>
         </div>
       )}
-      <p className="small muted">PDF وExcel بالمرحلة 5. هلأ بتقدر تطبعها أو تحفظها PDF من زر الطباعة.</p>
+      <p className="small muted">يمكنك طباعة التقرير أو حفظه بصيغة PDF من زر الطباعة.</p>
     </div>
   );
 }

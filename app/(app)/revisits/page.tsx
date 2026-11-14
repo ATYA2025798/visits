@@ -23,8 +23,7 @@ export default async function RevisitsPage({ searchParams }: { searchParams: Pro
         <div>
           <h1>بانتظار إعادة زيارة</h1>
           <p className="muted">
-            الخطوط اللي توصيتها «إعادة زيارة» أو «زيارة غير ناجحة»، مرتبة حسب المنطقة عشان تجمع زيارات المنطقة بطلعة
-            وحدة. أول ما تنسجل زيارة جديدة للخط بيطلع من هون لحاله.
+            الخطوط التي توصيتها «إعادة زيارة» أو «زيارة غير ناجحة»، مرتبة حسب المنطقة لتسهيل جمع زيارات المنطقة الواحدة في جولة واحدة. ويخرج الخط من هذه القائمة تلقائياً فور تسجيل زيارة جديدة له.
           </p>
         </div>
       </div>
@@ -42,7 +41,7 @@ export default async function RevisitsPage({ searchParams }: { searchParams: Pro
           </Link>
         ))}
       </div>
-      {rows.length === 0 && <div className="card empty">ما في ولا خط بانتظار إعادة زيارة.</div>}
+      {rows.length === 0 && <div className="card empty">لا توجد خطوط بانتظار إعادة الزيارة.</div>}
       {[...groups.entries()].map(([g, list]) => (
         <section key={g} className="card" style={{ marginBottom: 16 }} aria-label={g}>
           <div className="card-head">
@@ -77,7 +76,7 @@ export default async function RevisitsPage({ searchParams }: { searchParams: Pro
                     </td>
                     <td data-label="آخر زيارة" className="small">
                       <Link href={`/visits/${r.id}`}>
-                        <span className="ltr">#{r.number}</span> · {fmtDay(r.visitedOn)}
+                        <span className="ltr">{fmtDay(r.visitedOn)}</span>
                       </Link>
                     </td>
                     <td data-label="التوصية" className="small">

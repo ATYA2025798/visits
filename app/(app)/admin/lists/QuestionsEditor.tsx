@@ -22,7 +22,7 @@ export function QuestionsEditor({ questions, canManage }: { questions: Q[]; canM
     setError(null);
     const res = await p;
     setBusy(false);
-    if (!res.ok) setError(res.error ?? "صار خطأ");
+    if (!res.ok) setError(res.error ?? "حدث خطأ");
     else router.refresh();
     return res.ok;
   }
@@ -40,7 +40,7 @@ export function QuestionsEditor({ questions, canManage }: { questions: Q[]; canM
     <section className="card" aria-label="أسئلة المايكروتيك" data-list="MIKROTIK" style={{ gridColumn: "1 / -1" }}>
       <div className="card-head">
         <h2>أسئلة المايكروتيك</h2>
-        <span className="muted small">{active.length} فعّالة · بتظهر بنموذج الزيارة بأزرار سريعة</span>
+        <span className="muted small">{active.length} فعّالة · تظهر في نموذج الزيارة على شكل أزرار سريعة</span>
       </div>
       {error && (
         <div className="alert alert-error" role="alert" style={{ margin: "12px 20px 0" }}>
@@ -92,14 +92,14 @@ export function QuestionsEditor({ questions, canManage }: { questions: Q[]; canM
               </span>
               {canManage && (
                 <span className="actions">
-                  <button className="btn btn-ghost btn-sm" disabled={busy || i === 0} onClick={() => move(i, -1)} aria-label="لفوق">
+                  <button className="btn btn-ghost btn-sm" disabled={busy || i === 0} onClick={() => move(i, -1)} aria-label="إلى الأعلى">
                     ↑
                   </button>
                   <button
                     className="btn btn-ghost btn-sm"
                     disabled={busy || i === active.length - 1}
                     onClick={() => move(i, 1)}
-                    aria-label="لتحت"
+                    aria-label="إلى الأسفل"
                   >
                     ↓
                   </button>
@@ -162,7 +162,7 @@ export function QuestionsEditor({ questions, canManage }: { questions: Q[]; canM
           <div className="field">
             <label htmlFor="mq-options">الخيارات</label>
             <input id="mq-options" name="options" className="input" placeholder="نعم، لا" required />
-            <span className="hint">افصل بينها بفاصلة</span>
+            <span className="hint">افصل بين الخيارات بفاصلة</span>
           </div>
           <div>
             <button className="btn btn-primary" disabled={busy}>

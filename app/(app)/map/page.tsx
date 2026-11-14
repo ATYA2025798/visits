@@ -22,7 +22,7 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
       <div className="page-head">
         <div>
           <h1>الخريطة</h1>
-          <p className="muted">دبوس لكل خط من آخر زيارة فيها موقع، ولونه حسب آخر توصية.</p>
+          <p className="muted">يظهر دبوس لكل خط وفق آخر زيارة مسجّل فيها موقع، ويُلوَّن حسب آخر توصية.</p>
         </div>
       </div>
 
@@ -53,7 +53,7 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
             <input id="from" name="from" type="date" className="input" defaultValue={sp.from ?? ""} />
           </div>
           <div className="field">
-            <label htmlFor="to">لتاريخ</label>
+            <label htmlFor="to">إلى تاريخ</label>
             <input id="to" name="to" type="date" className="input" defaultValue={sp.to ?? ""} />
           </div>
           <div className="field">

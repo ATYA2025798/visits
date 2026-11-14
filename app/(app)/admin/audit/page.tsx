@@ -1,3 +1,4 @@
+import { fmtDateTime } from "@/lib/format";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requirePermission } from "@/lib/session";
@@ -18,7 +19,7 @@ const ACTION_LABEL: Record<string, { text: string; tone: string }> = {
   LOCKED: { text: "قفل مؤقت", tone: "badge-red" },
   PASSWORD_RESET: { text: "كلمة سر مؤقتة", tone: "badge-warn" },
   PASSWORD_CHANGE: { text: "تغيير كلمة السر", tone: "badge-gray" },
-  SESSIONS_REVOKED: { text: "طرد من الأجهزة", tone: "badge-warn" },
+  SESSIONS_REVOKED: { text: "تسجيل الخروج من الأجهزة", tone: "badge-warn" },
   IMPORT: { text: "استيراد", tone: "badge-blue" },
 };
 
@@ -53,7 +54,6 @@ const VALUE_LABEL: Record<string, string> = {
   false: "لا",
 };
 
-const fmt = new Intl.DateTimeFormat("ar-PS-u-nu-latn", { dateStyle: "medium", timeStyle: "medium" });
 
 type Search = { actor?: string; from?: string; to?: string; action?: string; page?: string };
 
@@ -119,7 +119,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
       <div className="page-head">
         <div>
           <h1>سجل التعديلات</h1>
-          <p className="muted">كل إضافة أو تعديل أو حذف بالنظام، مين عمله ومتى. السجل ما بينعدّل ولا بينمسح.</p>
+          <p className="muted">جميع عمليات الإضافة والتعديل والحذف في النظام، ومن قام بها ومتى. ولا يمكن تعديل هذا السجل أو حذفه.</p>
         </div>
       </div>
 
@@ -153,7 +153,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
             <input id="from" name="from" type="date" className="input" defaultValue={sp.from ?? ""} />
           </div>
           <div className="field">
-            <label htmlFor="to">لتاريخ</label>
+            <label htmlFor="to">إلى تاريخ</label>
             <input id="to" name="to" type="date" className="input" defaultValue={sp.to ?? ""} />
           </div>
           <div className="actions">
@@ -167,7 +167,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
         </form>
 
         {rows.length === 0 ? (
-          <div className="empty">ما في عمليات بهالفلتر.</div>
+          <div className="empty">لا توجد عمليات مطابقة لهذا الفلتر.</div>
         ) : (
           <div className="table-wrap">
             <table className="table stack">
@@ -189,7 +189,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
                       : `${ENTITY_LABEL[r.entity] ?? r.entity} ${r.entityId}`;
                   return (
                     <tr key={r.id.toString()}>
-                      <td className="cell-main small">{fmt.format(r.at)}</td>
+                      <td className="cell-main small">{fmtDateTime(r.at)}</td>
                       <td data-label="الشخص">
                         {r.actorId ? (names.get(r.actorId) ?? "؟") : <span className="muted">النظام</span>}
                       </td>

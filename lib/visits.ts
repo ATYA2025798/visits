@@ -2,6 +2,7 @@
  * الزيارات: تسجيل، تعديل التقرير (لصاحبه)، تعديل الحالة (لأي سفير)، حذف ناعم واسترجاع.
  * كل دالة بتفحص الصلاحية بنفسها (lib/authz) وبتكتب السجل بنفس العملية (withAudit).
  */
+import { visitLabel } from "./format";
 import { z } from "zod";
 import { prisma as defaultPrisma, type Db, type Tx } from "./db";
 import { withAudit } from "./audit";
@@ -17,11 +18,11 @@ const text = (max: number) =>
   z
     .string()
     .trim()
-    .max(max, "النص طويل كتير")
+    .max(max, "النص طويل جداً")
     .nullish()
     .transform((v) => (v ? v : null));
 
-const day = z.string().refine((s) => parseDay(s) !== null, "التاريخ لازم يكون بصيغة 2026-11-13");
+const day = z.string().refine((s) => parseDay(s) !== null, "يجب أن يكون التاريخ بصيغة 2026-11-13");
 
 const reportFields = {
   visitedOn: day,
@@ -36,7 +37,7 @@ const reportFields = {
 
 export const createVisitSchema = z.object({
   ...reportFields,
-  recommendationId: z.uuid({ error: "اختار التوصية" }),
+  recommendationId: z.uuid({ error: "اختر التوصية" }),
   actionId: z.uuid().nullish(),
   revisitDue: day.nullish(),
   revisitOfId: z.uuid().nullish(),
@@ -45,12 +46,12 @@ export const createVisitSchema = z.object({
 export const reportPatchSchema = z
   .object(reportFields)
   .partial()
-  .refine((v) => Object.keys(v).length > 0, "ما في شي يتعدّل");
+  .refine((v) => Object.keys(v).length > 0, "لا توجد بيانات لتعديلها");
 
 export const statusPatchSchema = z
   .object({ recommendationId: z.uuid(), actionId: z.uuid().nullable(), revisitDue: day.nullable() })
   .partial()
-  .refine((v) => Object.keys(v).length > 0, "ما في شي يتعدّل");
+  .refine((v) => Object.keys(v).length > 0, "لا توجد بيانات لتعديلها");
 
 type CreateInput = z.input<typeof createVisitSchema>;
 
@@ -65,7 +66,7 @@ export interface FieldExtras {
 
 function checkDate(s: string): Date {
   const d = parseDay(s)!;
-  if (s > todayLocal()) throw new ApiError(400, "تاريخ الزيارة ما بيصير يكون بالمستقبل");
+  if (s > todayLocal()) throw new ApiError(400, "لا يمكن أن يكون تاريخ الزيارة في المستقبل");
   return d;
 }
 
@@ -73,7 +74,7 @@ async function listItemFor(tx: Tx, kind: ListKind, id: string, currentId: string
   const item = await tx.listItem.findUnique({ where: { id } });
   // القيمة الموقوفة مسموحة بس إذا هي القيمة الحالية بالزيارة
   if (!item || item.kind !== kind || (!item.active && item.id !== currentId))
-    throw new ApiError(400, `${label} مش من القائمة`);
+    throw new ApiError(400, `${label} ليس ضمن القائمة`);
   return item;
 }
 
@@ -81,17 +82,17 @@ async function checkCompanions(tx: Tx, ownerId: string | null, ids: string[]) {
   if (!ids.length) return;
   const users = await tx.user.findMany({ where: { id: { in: ids }, role: "AMBASSADOR", active: true } });
   if (users.length !== new Set(ids).size || ids.includes(ownerId ?? "")) {
-    throw new ApiError(400, "المرافق لازم يكون سفير فعّال غير صاحب الزيارة");
+    throw new ApiError(400, "يجب أن يكون المرافق سفيراً فعّالاً غير صاحب الزيارة");
   }
 }
 
 /** الكود ← المفتاح والخط واسم الحساب. كود مش معروف مسموح مع تنبيه. */
 async function resolveLine(tx: Tx, lineCode: string | null, specialCase: boolean, accountName: string | null) {
   if (specialCase) {
-    if (!accountName) throw new ApiError(400, "اكتب الاسم للحالة الخاصة");
+    if (!accountName) throw new ApiError(400, "أدخل اسم الحالة الخاصة");
     return { lineCode: null, lineCodeKey: null, lineId: null, accountName, warning: null };
   }
-  if (!isValidLineCode(lineCode)) throw new ApiError(400, "اكتب Line Code صالح، أو اختار «حالة خاصة»");
+  if (!isValidLineCode(lineCode)) throw new ApiError(400, "أدخل Line Code صالحاً، أو اختر «حالة خاصة»");
   const lineCodeKey = normalizeLineCode(lineCode);
   const line = await tx.line.findUnique({ where: { codeKey: lineCodeKey } });
   return {
@@ -101,7 +102,7 @@ async function resolveLine(tx: Tx, lineCode: string | null, specialCase: boolean
     accountName: accountName ?? line?.accountName ?? null,
     warning: line
       ? null
-      : "الخط مش موجود بملف المشتركين. الزيارة انحفظت، وبتنربط لحالها لما يوصل الخط بالملف أو ينضاف يدوياً.",
+      : "الخط غير موجود في ملف المشتركين. تم حفظ الزيارة، وسيتم ربطها تلقائياً عند ورود الخط في الملف أو إضافته يدوياً.",
   };
 }
 
@@ -296,7 +297,7 @@ export async function deleteVisit(actor: Actor, visitId: string, db: Db = defaul
     async (tx, audit) => {
       const v = await loadVisit(tx, visitId);
       await tx.visit.update({ where: { id: v.id }, data: { deletedAt: new Date() } });
-      audit.deleted("Visit", v.id, `زيارة رقم ${v.number}`);
+      audit.deleted("Visit", v.id, visitLabel(v));
     },
     db,
   );
@@ -310,7 +311,7 @@ export async function restoreVisit(actor: Actor, visitId: string, db: Db = defau
       const v = await tx.visit.findUnique({ where: { id: visitId } });
       if (!v || !v.deletedAt) throw notFound();
       await tx.visit.update({ where: { id: v.id }, data: { deletedAt: null } });
-      audit.event("RESTORE", "Visit", v.id, `زيارة رقم ${v.number}`);
+      audit.event("RESTORE", "Visit", v.id, visitLabel(v));
     },
     db,
   );

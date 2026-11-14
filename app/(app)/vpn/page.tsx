@@ -1,3 +1,4 @@
+import { fmtDateTime } from "@/lib/format";
 import type { Metadata } from "next";
 import { requirePermission } from "@/lib/session";
 import { can } from "@/lib/authz";
@@ -7,11 +8,6 @@ import { VpnSiteForm } from "@/components/SiteFieldForms";
 
 export const metadata: Metadata = { title: "حالات VPN" };
 
-const fmt = new Intl.DateTimeFormat("ar-PS-u-nu-latn", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "Asia/Hebron",
-});
 
 export default async function VpnPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const me = await requirePermission("visits:view");
@@ -22,14 +18,14 @@ export default async function VpnPage({ searchParams }: { searchParams: Promise<
       <div className="page-head">
         <div>
           <h1>حالات VPN</h1>
-          <p className="muted">مستقلة عن الزيارات. إذا نفس الـ IP أو اسم الشبكة انسجل قبل، بتطلع علامة «متكرر».</p>
+          <p className="muted">مستقلة عن الزيارات. وإذا سبق تسجيل عنوان IP نفسه أو اسم الشبكة نفسه، تظهر علامة «متكرر».</p>
         </div>
       </div>
       {can(me, "visits:create") && <VpnSiteForm />}
       <div className="card">
         <form className="filters actions" method="get" role="search">
           <label className="sr-only" htmlFor="vq">
-            بحث بالـ IP أو الاسم
+            البحث بعنوان IP أو الاسم
           </label>
           <input
             id="vq"
@@ -37,12 +33,12 @@ export default async function VpnPage({ searchParams }: { searchParams: Promise<
             className="input"
             style={{ maxWidth: 320 }}
             defaultValue={q}
-            placeholder="بحث بالـ IP أو اسم الشبكة"
+            placeholder="البحث بعنوان IP أو اسم الشبكة"
           />
           <button className="btn btn-primary">بحث</button>
         </form>
         {rows.length === 0 ? (
-          <div className="empty">ما في حالات{q ? " بهالبحث" : ""}.</div>
+          <div className="empty">لا توجد حالات{q ? " مطابقة لهذا البحث" : ""}.</div>
         ) : (
           <div className="table-wrap">
             <table className="table stack">
@@ -51,8 +47,8 @@ export default async function VpnPage({ searchParams }: { searchParams: Promise<
                   <th>الشبكة</th>
                   <th>IP</th>
                   <th>المكان</th>
-                  <th>المشتبه فيهم</th>
-                  <th>مين ومتى</th>
+                  <th>المشتبه بهم</th>
+                  <th>بواسطة وتاريخ الرفع</th>
                 </tr>
               </thead>
               <tbody>
@@ -69,11 +65,11 @@ export default async function VpnPage({ searchParams }: { searchParams: Promise<
                     <td data-label="المكان" className="small">
                       {r.placeText ?? ""} <GpsLink lat={r.lat} lng={r.lng} accuracy={r.gpsAccuracy} />
                     </td>
-                    <td data-label="المشتبه فيهم" className="small">
+                    <td data-label="المشتبه بهم" className="small">
                       {r.suspects ?? "—"}
                     </td>
-                    <td data-label="مين ومتى" className="small muted">
-                      {r.owner.displayName} · {fmt.format(r.filledAt)}
+                    <td data-label="بواسطة وتاريخ الرفع" className="small muted">
+                      {r.owner.displayName} · {fmtDateTime(r.filledAt)}
                     </td>
                   </tr>
                 ))}

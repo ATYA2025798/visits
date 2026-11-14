@@ -25,7 +25,7 @@ export default async function VisitsPage({
       <div className="page-head">
         <div>
           <h1>الزيارات</h1>
-          <p className="muted">كل الزيارات، القديمة من الإكسل والجديدة. الضغط على رقم الزيارة بيفتح تقريرها.</p>
+          <p className="muted">جميع الزيارات، المنقولة من الإكسل والجديدة. اضغط على Line Code أو التاريخ لفتح تقرير الزيارة.</p>
         </div>
         {can(me, "visits:create") && (
           <Link className="btn btn-primary" href="/visits/new">
@@ -35,7 +35,7 @@ export default async function VisitsPage({
       </div>
       {sp.deleted && (
         <div className="alert alert-ok" role="status" style={{ marginBottom: 16 }}>
-          انحذفت الزيارة وانتقلت لسلة المحذوفات.
+          تم حذف الزيارة ونقلها إلى سلة المحذوفات.
         </div>
       )}
       <div className="card">

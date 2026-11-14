@@ -36,7 +36,7 @@ export function VpnSiteForm() {
         setOpen(false);
         setMsg({
           ok: true,
-          text: r.data.previous ? `انحفظت. في ${r.data.previous} حالة سابقة بنفس الـ IP أو الاسم.` : "انحفظت.",
+          text: r.data.previous ? `تم الحفظ. توجد ${r.data.previous} حالة سابقة بعنوان IP نفسه أو بالاسم نفسه.` : "تم الحفظ.",
         });
         router.refresh();
       }}
@@ -52,7 +52,7 @@ export function VpnSiteForm() {
           <input id="vs-name" name="networkName" className="input" required />
         </div>
         <div className="field">
-          <label htmlFor="vs-ip">الـ IP</label>
+          <label htmlFor="vs-ip">عنوان IP</label>
           <input id="vs-ip" name="ip" className="input ltr" required />
         </div>
         <div className="field">
@@ -60,7 +60,7 @@ export function VpnSiteForm() {
           <input id="vs-place" name="placeText" className="input" />
         </div>
         <div className="field">
-          <label htmlFor="vs-sus">الحسابات المشتبه فيها</label>
+          <label htmlFor="vs-sus">الحسابات المشتبه بها</label>
           <input id="vs-sus" name="suspects" className="input" />
         </div>
         <div className="field">
@@ -121,12 +121,12 @@ export function CardSiteForm() {
           <input id="cs-price" name="price" className="input ltr" inputMode="decimal" required />
         </div>
         <div className="field">
-          <label htmlFor="cs-ip">الـ IP (اختياري)</label>
+          <label htmlFor="cs-ip">عنوان IP (اختياري)</label>
           <input id="cs-ip" name="ip" className="input ltr" />
         </div>
       </div>
       <p className="small muted" style={{ margin: 0 }}>
-        من الموقع بتنسجل كـ «فحص خارجي». للربط بزيارة أو حالة VPN استعمل تطبيق الميدان.
+        تُسجَّل البطاقات المُدخلة من الموقع بوصفها «فحصاً خارجياً». ولربطها بزيارة أو بحالة VPN يُرجى استخدام تطبيق الميدان.
       </p>
       <div className="actions">
         <button className="btn btn-primary">حفظ</button>

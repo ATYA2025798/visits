@@ -2,6 +2,7 @@
  * طلب تعديل تقرير زيارة سفير تاني. صاحب الزيارة بيشوف القديم والجديد جنب بعض وبيوافق أو بيرفض.
  * الموافقة بتطبّق التعديل باسم مقدم الطلب، والسجل بيذكر مين وافق.
  */
+import { visitLabel } from "./format";
 import { z } from "zod";
 import { prisma as defaultPrisma, type Db } from "./db";
 import { withAudit } from "./audit";
@@ -12,7 +13,7 @@ import { applyReportPatch, auditView, loadVisit, reportPatchSchema } from "./vis
 
 export const editRequestSchema = z.object({
   changes: reportPatchSchema,
-  reason: z.string().trim().min(2, "اكتب سبب التعديل").max(500),
+  reason: z.string().trim().min(2, "أدخل سبب التعديل").max(500),
 });
 
 type Change = { from: unknown; to: unknown };
@@ -38,18 +39,18 @@ export async function requestReportEdit(
     async (tx, audit) => {
       const v = await loadVisit(tx, visitId);
       const decision = reportEditDecision(actor, v);
-      if (decision === "allowed") throw new ApiError(400, "بتقدر تعدّل هالتقرير مباشرة");
+      if (decision === "allowed") throw new ApiError(400, "يمكنك تعديل هذا التقرير مباشرة");
       if (decision !== "request") throw forbidden();
       const changes: Record<string, Change> = {};
       for (const [field, to] of Object.entries(input.changes)) {
         const from = currentValue(v, field);
         if (!same(from, to)) changes[field] = { from, to };
       }
-      if (!Object.keys(changes).length) throw new ApiError(400, "التعديل المقترح نفس الموجود");
+      if (!Object.keys(changes).length) throw new ApiError(400, "التعديل المقترح مطابق للبيانات الحالية");
       const req = await tx.editRequest.create({
         data: { visitId, requesterId: actor.id, changes: changes as object, reason: input.reason },
       });
-      audit.event("CREATE", "EditRequest", req.id, `طلب تعديل على زيارة رقم ${v.number}: ${input.reason}`);
+      audit.event("CREATE", "EditRequest", req.id, `طلب تعديل على ${visitLabel(v)}: ${input.reason}`);
       return { ...req, changes };
     },
     db,
@@ -60,7 +61,7 @@ export async function decideEditRequest(actor: Actor, requestId: string, approve
   const req = await db.editRequest.findUnique({ where: { id: requestId }, include: { visit: true } });
   if (!req) throw notFound();
   if (!canDecideEditRequest(actor, req.visit)) throw forbidden();
-  if (req.status !== "PENDING") throw new ApiError(409, "الطلب انقرر قبل");
+  if (req.status !== "PENDING") throw new ApiError(409, "تم البت في هذا الطلب مسبقاً");
   const decider = await db.user.findUniqueOrThrow({ where: { id: actor.id }, select: { displayName: true } });
 
   if (!approve) {
@@ -85,7 +86,7 @@ export async function decideEditRequest(actor: Actor, requestId: string, approve
       const changes = req.changes as Record<string, Change>;
       for (const [field, c] of Object.entries(changes)) {
         if (!same(currentValue(before, field), c.from)) {
-          throw new ApiError(409, "التقرير تغيّر من وقت الطلب. ارفض الطلب واطلب من صاحبه يقدّمه من جديد");
+          throw new ApiError(409, "تغيّر التقرير منذ تقديم الطلب. يُرجى رفض الطلب ومطالبة مقدّمه بإعادة تقديمه");
         }
       }
       const patch = reportPatchSchema.parse(Object.fromEntries(Object.entries(changes).map(([f, c]) => [f, c.to])));

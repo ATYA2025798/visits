@@ -25,7 +25,7 @@ export async function validateAnswers(
   return raw.map((a) => {
     const q = questions.find((x) => x.id === a.questionId);
     if (!q || !q.options.includes(a.answer) || seen.has(a.questionId))
-      throw new ApiError(400, "إجابة المايكروتيك مش من الخيارات");
+      throw new ApiError(400, "إجابة المايكروتيك ليست ضمن الخيارات المتاحة");
     seen.add(a.questionId);
     return { questionId: q.id, question: q.text, answer: a.answer };
   });
@@ -70,21 +70,21 @@ export async function linesNeedingAccess(db: Db = defaultPrisma) {
 const optionsSchema = z
   .array(z.string())
   .transform((a) => [...new Set(a.map((o) => o.trim()).filter(Boolean))])
-  .pipe(z.array(z.string().max(60, "الخيار طويل")).min(2, "لازم خيارين على الأقل").max(8, "8 خيارات كحد أقصى"));
+  .pipe(z.array(z.string().max(60, "الخيار طويل جداً")).min(2, "يجب إدخال خيارين على الأقل").max(8, "8 خيارات كحد أقصى"));
 
 export const questionCreateSchema = z.object({
-  text: z.string().trim().min(3, "اكتب السؤال").max(200, "السؤال طويل"),
+  text: z.string().trim().min(3, "أدخل نص السؤال").max(200, "السؤال طويل جداً"),
   options: optionsSchema,
 });
 
 export const questionUpdateSchema = z
   .object({
-    text: z.string().trim().min(3, "اكتب السؤال").max(200, "السؤال طويل").optional(),
+    text: z.string().trim().min(3, "أدخل نص السؤال").max(200, "السؤال طويل جداً").optional(),
     options: optionsSchema.optional(),
     active: z.boolean().optional(),
     sortOrder: z.number().int().min(0).max(1000).optional(),
   })
-  .refine((v) => Object.keys(v).length > 0, "ما في شي يتعدّل");
+  .refine((v) => Object.keys(v).length > 0, "لا توجد بيانات لتعديلها");
 
 const AUDITED = ["text", "options", "active", "sortOrder"] as const;
 

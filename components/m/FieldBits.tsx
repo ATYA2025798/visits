@@ -47,9 +47,9 @@ export function GpsBox({
             </span>
           </span>
         ) : state === "busy" ? (
-          <span className="small muted">عم نحدد الموقع…</span>
+          <span className="small muted">جارٍ تحديد الموقع…</span>
         ) : (
-          <span className="small warn-text">{state === "error" ? error : "ما انحدد"}</span>
+          <span className="small warn-text">{state === "error" ? error : "لم يُحدَّد"}</span>
         )}
         <button type="button" className="btn btn-ghost btn-sm" onClick={read} disabled={state === "busy"}>
           {value ? "تحديث" : "حدد الموقع"}
@@ -73,7 +73,7 @@ export function PhotoPicker({
   return (
     <div className="field">
       <label htmlFor="photos" style={{ fontWeight: 600, fontSize: 14 }}>
-        {max > 1 ? `صور (اختياري، لغاية ${max})` : "صورة (اختياري)"}
+        {max > 1 ? `صور (اختياري، بحد أقصى ${max})` : "صورة (اختياري)"}
       </label>
       <div className="photos">
         {value.map((src, i) => (
@@ -82,7 +82,7 @@ export function PhotoPicker({
             type="button"
             style={{ padding: 0, border: 0, background: "none" }}
             onClick={() => onChange(value.filter((_, j) => j !== i))}
-            aria-label={`شيل الصورة ${i + 1}`}
+            aria-label={`إزالة الصورة ${i + 1}`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- صورة محلية من الجوال */}
             <img src={src} alt="" />
@@ -108,13 +108,13 @@ export function PhotoPicker({
               for (const f of files) out.push(await compressImage(f));
               onChange([...value, ...out]);
             } catch {
-              setError("ما قدرنا نقرأ الصورة");
+              setError("تعذّرت قراءة الصورة");
             }
             setBusy(false);
           }}
         />
       )}
-      {busy && <span className="hint">عم نصغّر الصورة…</span>}
+      {busy && <span className="hint">جارٍ تصغير الصورة…</span>}
       {error && <span className="hint warn-text">{error}</span>}
     </div>
   );
@@ -155,10 +155,10 @@ export function SavedNotice({ text, onAgain }: { text: string; onAgain: () => vo
       </div>
       <div className="actions">
         <button className="btn btn-primary" onClick={onAgain}>
-          وحدة كمان
+          إضافة أخرى
         </button>
         <a className="btn btn-ghost" href="/m">
-          للرئيسية
+          العودة إلى الرئيسية
         </a>
       </div>
     </div>
